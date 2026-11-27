@@ -1735,20 +1735,26 @@
     gap: 18px;
   }
 
+  /* Thẻ giấy tờ: nền giấy sáng cùng tông với trang (không dùng khối tối đối lập), viền son mảnh phía trên. */
   .cert {
-    background: var(--then);
-    color: var(--giay);
+    background: rgba(255, 250, 240, 0.7);
+    color: var(--ink);
     padding: 22px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    border: 1px solid var(--thep);
-    box-shadow: inset 0 0 0 5px var(--then), inset 0 0 0 6px rgba(196, 154, 74, 0.5);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--son);
   }
 
   .cert h3 {
     font-size: var(--step-1);
-    color: var(--thep-sang);
+    color: var(--son-deep);
+  }
+
+  .cert .eyebrow {
+    margin: 0;
+    color: var(--son);
   }
 
   .cert dl {
@@ -1760,8 +1766,7 @@
   }
 
   .cert dt {
-    color: var(--giay-2);
-    opacity: 0.75;
+    color: var(--muc);
   }
 
   .cert dd {
@@ -1779,8 +1784,8 @@
     display: block;
     aspect-ratio: 5 / 4;
     overflow: hidden;
-    background: var(--giay);
-    border: 1px solid rgba(196, 154, 74, 0.45);
+    background: #fff;
+    border: 1px solid var(--line);
     margin-bottom: 4px;
   }
 
@@ -1808,9 +1813,9 @@
     padding: 5px 10px;
     font-size: 0.78rem;
     font-weight: 600;
-    color: var(--giay);
-    background: rgba(26, 18, 16, 0.82);
-    border: 1px solid rgba(196, 154, 74, 0.6);
+    color: var(--ink);
+    background: rgba(245, 238, 223, 0.94);
+    border: 1px solid var(--line);
   }
 
   .cert__zoom svg,
@@ -1839,16 +1844,16 @@
     padding: 8px 14px;
     font-size: var(--step--1);
     font-weight: 600;
-    color: var(--thep-sang);
+    color: var(--son);
     text-decoration: none;
-    border: 1px solid var(--thep);
+    border: 1px solid var(--son);
     transition: background 0.2s, color 0.2s;
   }
 
   .cert__btn:hover,
   .cert__btn:focus-visible {
-    background: var(--thep);
-    color: var(--then);
+    background: var(--son);
+    color: var(--giay);
   }
 
   .certs-dl {
@@ -1886,8 +1891,7 @@
 
   .cert .src {
     font-size: 0.75rem;
-    color: var(--giay-2);
-    opacity: 0.7;
+    color: var(--muc);
   }
 
   .lines {
@@ -3355,7 +3359,7 @@
               <dd>22/09/2030</dd>
             </dl>
             <div>
-              <p class="eyebrow" style="margin:0;color:var(--thep-sang)">Đủ điều kiện hành nghề</p>
+              <p class="eyebrow">Đủ điều kiện hành nghề</p>
               <ul>
                 <li>Thi công tu bổ di tích</li>
                 <li>Có giá trị trên phạm vi toàn quốc</li>
@@ -3383,7 +3387,7 @@
               <dd>21/08/2029</dd>
             </dl>
             <div>
-              <p class="eyebrow" style="margin:0;color:var(--thep-sang)">Phạm vi</p>
+              <p class="eyebrow">Phạm vi</p>
               <ul>
                 <li>Thi công công trình dân dụng — Hạng II</li>
                 <li>Thi công công trình công nghiệp nhẹ — Hạng III</li>
@@ -3411,7 +3415,7 @@
               <dd>25/06/2026</dd>
             </dl>
             <div>
-              <p class="eyebrow" style="margin:0;color:var(--thep-sang)">Nội dung chính</p>
+              <p class="eyebrow">Nội dung chính</p>
               <ul>
                 <li>Vốn điều lệ: 9.999.000.000 đồng</li>
                 <li>Người đại diện theo pháp luật: Bà Lê Thị Lường — Giám đốc</li>
