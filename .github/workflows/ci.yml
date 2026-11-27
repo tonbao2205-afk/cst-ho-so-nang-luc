@@ -74,20 +74,12 @@ jobs:
         run: python tests/smoke_test.py
 
   pages:
-    name: Đăng web tĩnh lên GitHub Pages
+    name: Gom web tĩnh cho GitHub Pages
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    concurrency:
-      group: pages
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
 
@@ -105,6 +97,21 @@ jobs:
         with:
           path: _site
 
+  # Bước đăng tách riêng (mẫu chuẩn của GitHub): đăng ngay trong cùng job đôi khi chưa thấy tệp vừa tải lên.
+  pages-deploy:
+    name: Đăng web tĩnh lên GitHub Pages
+    needs: pages
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
       - name: Đăng lên GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
