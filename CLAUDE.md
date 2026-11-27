@@ -9,6 +9,9 @@
 3. CHƯA ĐẠT → sửa tiếp và gọi lại `ui-verifier`. Chỉ báo người dùng "xong" khi ĐẠT.
 4. Tự kiểm nhanh: `python -I .claude/skills/check-ui/check_ui.py --quick` (ảnh trong `.claude/ui-check/`).
 
+## Giao diện tối
+- Phần hồ sơ (`.profile`, từ "Giới thiệu chung" trở đi) có giao diện tối: lớp `html.theme-dark` (script đầu trang: theo `localStorage['cst-theme']`, chưa chọn thì theo `prefers-color-scheme`; nút `.theme-btn` trên thanh đầu trang). CSS ở khối "Giao diện tối cho phần hồ sơ" cuối `<style>`: đổi biến màu trong `.profile` + vài nút nền son giữ đỏ sẫm. Nền tối `#17110e` phải khớp `PAPER_DARK` trong script 3D. Thêm khối mới có màu cứng (hex/rgba) thì thêm luôn bản tối.
+
 ## Trang admin (`admin/`)
 - `admin/server.py`: máy chủ (chỉ thư viện chuẩn), phục vụ trang + API admin; một mật khẩu, lưu băm trong `admin/data/config.json`; mỗi lần lưu cất bản cũ vào `admin/data/backups/`. `admin/data/` không bao giờ được phục vụ ra ngoài.
 - `admin/admin.js`: tải `index.html`, tắt script, sửa trực tiếp trong iframe. Khi lưu chỉ thay đúng đoạn mã của phần đã đổi (mỗi phần tử gắn `data-admin-id` theo thứ tự trong mã gốc; bản sao mang `data-admin-from`), phần còn lại giữ nguyên từng ký tự; nếu kiểm tra không khớp mới ghi lại cả trang. Trình sửa chỉ cho: sửa chữ, thêm/xóa/đổi thứ tự dòng–thẻ–hàng, thay ảnh, thay tệp PDF (không còn sửa mã HTML).

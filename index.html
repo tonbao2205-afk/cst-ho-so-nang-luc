@@ -11,6 +11,15 @@
     window.visualViewport?.addEventListener('resize', set);
   })();
 </script>
+<script>
+  // Giao diện tối cho phần hồ sơ: theo lựa chọn đã lưu (nút trên thanh đầu trang), chưa chọn thì theo cài đặt máy.
+  (() => {
+    let saved = null;
+    try { saved = localStorage.getItem('cst-theme'); } catch { /* trình duyệt chặn lưu trữ */ }
+    const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('theme-dark', dark);
+  })();
+</script>
 <title>CST.,JSC Hồ sơ năng lực</title>
 <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
@@ -2387,54 +2396,6 @@
     color: var(--giay-2);
   }
 
-  /* doanh thu */
-  .bars {
-    display: grid;
-    gap: 12px;
-    max-width: 720px;
-  }
-
-  .bar {
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    gap: 12px;
-    align-items: center;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .bar__track {
-    position: relative;
-    height: 34px;
-  }
-
-  .bar__fill {
-    height: 100%;
-    background: var(--son);
-  }
-
-  /* Số tiền phủ cả thanh: phần chữ nằm trên cột màu sáng, phần thừa ra ngoài cột màu tối → cột ngắn đến đâu cũng đọc được.
-     --w = độ dài cột (trang admin tự tính theo số tiền, cùng lúc với width của .bar__fill). */
-  .bar__val {
-    position: absolute;
-    left: 0;
-    right: 0;
-    padding-left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--giay);
-    font-size: var(--step--1);
-    white-space: nowrap;
-  }
-
-  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-    .bar__val {
-      color: transparent;
-      background: linear-gradient(90deg, var(--giay) var(--w, 100%), var(--ink) var(--w, 100%));
-      -webkit-background-clip: text;
-      background-clip: text;
-    }
-  }
-
   .note {
     font-size: var(--step--1);
     color: var(--muc);
@@ -2746,6 +2707,174 @@
     }
   }
 
+  /* ---------- Nút đổi giao diện sáng / tối (thanh đầu trang) ---------- */
+  .theme-btn {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: var(--thep-sang);
+    background: transparent;
+    border: 1px solid rgba(196, 154, 74, .45);
+    cursor: pointer;
+  }
+
+  .theme-btn:hover {
+    background: rgba(196, 154, 74, .12);
+  }
+
+  .theme-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .theme-btn__sun,
+  html.theme-dark .theme-btn__moon {
+    display: none;
+  }
+
+  html.theme-dark .theme-btn__sun {
+    display: block;
+  }
+
+  @media (max-width: 760px) {
+    .theme-btn {
+      width: 44px;
+      height: 44px;
+      margin-left: auto;
+    }
+
+    .theme-btn~.menu-btn {
+      margin-left: 0;
+    }
+  }
+
+  /* ---------- Giao diện tối cho phần hồ sơ (từ "Giới thiệu chung" trở đi) ----------
+     Bật bằng lớp html.theme-dark (nút trên thanh đầu trang; mặc định theo cài đặt máy). Phần hành trình 3D vốn đã tối.
+     Trong .profile đổi lại bảng màu: --giay = nền tối, --ink = chữ sáng, --son = đỏ son sáng (chữ nhấn).
+     Nút nền son giữ đỏ sẫm + chữ giấy. Nền #17110e phải khớp PAPER_DARK của cảnh 3D. */
+  html.theme-dark body {
+    background: #17110e;
+    color-scheme: dark;
+  }
+
+  html.theme-dark .profile {
+    --giay: #17110e;
+    --giay-2: #cfc2ab;
+    --ink: #ece2cf;
+    --muc: #b3a592;
+    --line: rgba(226, 194, 122, 0.16);
+    --son: #e07c69;
+    --son-deep: #eba08e;
+    --surface: #1f1713;
+    color: var(--ink);
+  }
+
+  /* Không có 3D: cảnh kết tan sang nền tối thay vì màu giấy. */
+  html.theme-dark .outro-step::after {
+    background: linear-gradient(180deg, rgba(23, 17, 14, 0) 0%, rgba(23, 17, 14, .5) 35%, rgba(23, 17, 14, .92) 58%, #17110e 70%);
+  }
+
+  html.theme-dark .watermark svg {
+    opacity: 0.045;
+  }
+
+  html.theme-dark .cert,
+  html.theme-dark .table-wrap,
+  html.theme-dark .works-head,
+  html.theme-dark .org__node {
+    background: var(--surface);
+  }
+
+  html.theme-dark .works-head::before {
+    mix-blend-mode: screen;
+    opacity: .08;
+  }
+
+  html.theme-dark .works-head::after {
+    background: linear-gradient(90deg, rgba(31, 23, 19, .9) 35%, rgba(31, 23, 19, 0) 85%);
+  }
+
+  html.theme-dark .works-head+.table-wrap th {
+    background: #231a15;
+    color: var(--son-deep);
+  }
+
+  html.theme-dark .cert__scan img {
+    filter: brightness(.9);
+  }
+
+  html.theme-dark .cert__zoom {
+    color: var(--ink);
+    background: rgba(23, 17, 14, .88);
+  }
+
+  html.theme-dark .cert__btn:hover,
+  html.theme-dark .cert__btn:focus-visible {
+    background: #952e27;
+    border-color: #952e27;
+    color: #f5eedf;
+  }
+
+  html.theme-dark .certs-dl__btn,
+  html.theme-dark .chip[aria-pressed="true"],
+  html.theme-dark .org__node--top {
+    background: #952e27;
+    border-color: #952e27;
+    color: #f5eedf;
+  }
+
+  html.theme-dark .certs-dl__btn:hover,
+  html.theme-dark .certs-dl__btn:focus-visible {
+    background: #6a1d18;
+  }
+
+  html.theme-dark .check-panel {
+    background: #231a15;
+    color: #f5eedf;
+    border-left-color: #952e27;
+  }
+
+  html.theme-dark .org__node--dark,
+  html.theme-dark .staff .hl {
+    background: #2b1d19;
+  }
+
+  html.theme-dark td .tag {
+    color: #f5eedf;
+  }
+
+  html.theme-dark td .tag--civil {
+    background: #6e6158;
+  }
+
+  html.theme-dark td .tag--unknown {
+    color: #1a1210;
+  }
+
+  html.theme-dark tbody tr:hover {
+    background: rgba(224, 124, 105, 0.07);
+  }
+
+  html.theme-dark .toolbar {
+    background: rgba(224, 124, 105, .05);
+  }
+
+  html.theme-dark .seg {
+    border-color: rgba(224, 124, 105, .4);
+  }
+
+  html.theme-dark .search input {
+    background: rgba(255, 255, 255, .05);
+    border-color: rgba(226, 194, 122, .25);
+  }
+
+  html.theme-dark .search input:focus {
+    background: rgba(255, 255, 255, .08);
+  }
+
   @keyframes flap {
     from {
       transform: scaleY(1);
@@ -2951,6 +3080,15 @@
       <a href="#hanh-trinh">Hành trình</a><a href="#gioi-thieu">Giới thiệu</a><a href="#phap-ly">Pháp lý</a>
       <a href="#cong-trinh">Công trình</a><a href="#lien-he">Liên hệ</a>
     </nav>
+    <button class="theme-btn" type="button" aria-pressed="false" aria-label="Giao diện tối" title="Giao diện tối / sáng"><svg
+        class="theme-btn__moon" viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M16 12.6A6.5 6.5 0 0 1 7.4 4a6.5 6.5 0 1 0 8.6 8.6Z" fill="none" stroke="currentColor" stroke-width="1.6"
+          stroke-linejoin="round" />
+      </svg><svg class="theme-btn__sun" viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="10" cy="10" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <path d="M10 1.8v2.2M10 16v2.2M1.8 10H4M16 10h2.2M4.2 4.2l1.6 1.6M14.2 14.2l1.6 1.6M4.2 15.8l1.6-1.6M14.2 5.8l1.6-1.6"
+          stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </svg></button>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu-sheet" aria-label="Mở mục lục">
       <span></span><span></span><span></span>
     </button>
@@ -3263,7 +3401,7 @@
         <div class="outro">
           <p class="eyebrow"><span data-auto="so-tieu-bieu">6</span> trong <span data-auto="so-cong-trinh">40</span> công trình · từ <span data-auto="nam-thanh-lap">2007</span></p>
           <h2>Còn nhiều công trình nữa trên khắp cả nước</h2>
-          <p>Phía dưới là hồ sơ năng lực đầy đủ: pháp lý, nhân sự, thiết bị, tài chính và danh mục công trình.</p>
+          <p>Phía dưới là hồ sơ năng lực đầy đủ: pháp lý, nhân sự, thiết bị và danh mục công trình.</p>
           <a class="outro__cta" href="#gioi-thieu">Xem hồ sơ năng lực <span aria-hidden="true">↓</span></a>
         </div>
       </div>
@@ -3734,32 +3872,6 @@
             </tbody>
           </table>
         </div>
-      </div>
-    </section>
-    <section class="section" id="tai-chinh">
-      <div class="wrap">
-        <header class="section__head">
-          <p class="eyebrow">Số liệu về tài chính</p>
-          <h2>Doanh thu 2023–2025</h2>
-        </header>
-        <div class="bars">
-          <div class="bar"><span>2023</span>
-            <div class="bar__track">
-              <div class="bar__fill" style="width:72.2%"></div><span class="bar__val" style="--w:72.2%">24.624.046.912 đ</span>
-            </div>
-          </div>
-          <div class="bar"><span>2024</span>
-            <div class="bar__track">
-              <div class="bar__fill" style="width:100.0%"></div><span class="bar__val" style="--w:100.0%">34.127.405.400 đ</span>
-            </div>
-          </div>
-          <div class="bar"><span>2025</span>
-            <div class="bar__track">
-              <div class="bar__fill" style="width:98.1%"></div><span class="bar__val" style="--w:98.1%">33.479.778.704 đ</span>
-            </div>
-          </div>
-        </div>
-        <p class="note">Doanh thu hoạt động xây dựng 3 năm gần nhất.</p>
       </div>
     </section>
     <section class="section" id="cong-trinh">
@@ -5168,7 +5280,11 @@
 
     const scene = new THREE.Scene();
     const baTrauColor = new THREE.Color(COLORS.baTrau);
-    const paperColor = new THREE.Color(0xf5eedf); // --giay: nền phần hồ sơ
+    const PAPER_LIGHT = 0xf5eedf; // --giay: nền phần hồ sơ
+    const PAPER_DARK = 0x17110e; // nền phần hồ sơ khi giao diện tối (html.theme-dark body)
+    const paperOf = () => (document.documentElement.classList.contains('theme-dark') ? PAPER_DARK : PAPER_LIGHT);
+    const paperColor = new THREE.Color(paperOf());
+    window.addEventListener('cst-theme', () => paperColor.set(paperOf()));
     let paperOn = false;
     scene.background = baTrauColor;
     scene.fog = new THREE.Fog(COLORS.baTrau, 9, 24);
@@ -5800,6 +5916,34 @@
     set('so-nam', String(years));
     set('nam-gan', approx);
     set('nam-thanh-lap', String(founded));
+  })();
+
+  // Nút giao diện sáng / tối: lưu lựa chọn, báo cho cảnh 3D đổi màu nền nối với phần hồ sơ.
+  (() => {
+    const root = document.documentElement;
+    const btn = document.querySelector('.theme-btn');
+    if (!btn) return;
+    const sync = () => {
+      const dark = root.classList.contains('theme-dark');
+      btn.setAttribute('aria-pressed', String(dark));
+      btn.setAttribute('aria-label', dark ? 'Giao diện sáng' : 'Giao diện tối');
+    };
+    const apply = (dark, save) => {
+      root.classList.toggle('theme-dark', dark);
+      if (save) {
+        try { localStorage.setItem('cst-theme', dark ? 'dark' : 'light'); } catch { /* bỏ qua */ }
+      }
+      sync();
+      window.dispatchEvent(new Event('cst-theme'));
+    };
+    btn.addEventListener('click', () => apply(!root.classList.contains('theme-dark'), true));
+    // Chưa tự chọn thì đổi theo cài đặt máy khi máy đổi.
+    matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', (e) => {
+      let saved = null;
+      try { saved = localStorage.getItem('cst-theme'); } catch { /* bỏ qua */ }
+      if (!saved) apply(e.matches, false);
+    });
+    sync();
   })();
 
   document.querySelectorAll('[data-copy]').forEach((button) => {
