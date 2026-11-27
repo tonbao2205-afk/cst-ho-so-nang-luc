@@ -164,6 +164,18 @@
       s.setAttribute('data-admin-type', t === null ? '__none__' : t);
       s.setAttribute('type', 'text/x-admin-off');
     });
+    // Khung sửa (srcdoc) tải trước tài nguyên theo đường dẫn /admin/… → 404; tắt preload trong khung, khi lưu bật lại.
+    doc.querySelectorAll('link[rel="preload"]').forEach((l) => {
+      l.setAttribute('data-admin-rel', 'preload');
+      l.setAttribute('rel', 'x-admin-off');
+    });
+    // Ảnh màn trống đồng (ẩn trong khung sửa) bị trình duyệt tải trước sai đường dẫn: dùng đường dẫn tuyệt đối, khi lưu trả lại.
+    doc.querySelectorAll('[data-opening] img[src]').forEach((im) => {
+      const src = im.getAttribute('src');
+      if (/^[a-z]+:|^\//i.test(src)) return;
+      im.setAttribute('data-admin-src', src);
+      im.setAttribute('src', `/${src}`);
+    });
     const base = doc.createElement('base');
     base.href = '/';
     base.setAttribute('data-admin', '');
@@ -1229,6 +1241,14 @@
       for (const a of [...el.attributes]) {
         if (/^(bis_|__|data-gr-|data-gramm|data-new-gr|data-lt-|data-darkreader|cz-shortcut|data-dynamic-id)/i.test(a.name)) el.removeAttribute(a.name);
       }
+    });
+    root.querySelectorAll('img[data-admin-src]').forEach((im) => {
+      im.setAttribute('src', im.getAttribute('data-admin-src'));
+      im.removeAttribute('data-admin-src');
+    });
+    root.querySelectorAll('link[data-admin-rel]').forEach((l) => {
+      l.setAttribute('rel', l.getAttribute('data-admin-rel'));
+      l.removeAttribute('data-admin-rel');
     });
     root.querySelectorAll('script[data-admin-type]').forEach((s) => {
       const t = s.getAttribute('data-admin-type');
