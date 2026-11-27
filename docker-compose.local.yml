@@ -1,0 +1,10 @@
+# Chạy thử trên máy (không cần tên miền, không HTTPS):
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build app
+# → trang http://localhost:8080 , admin http://localhost:8080/admin/
+services:
+  app:
+    image: cst-site:local
+    environment:
+      CST_COOKIE_SECURE: "0"
+    ports:
+      - "8080:8080"

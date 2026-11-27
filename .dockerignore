@@ -1,0 +1,19 @@
+# Chỉ đưa vào image những gì Dockerfile cần.
+.git
+.github
+.claude
+.vscode
+admin/data
+sentry
+Giấy Tờ
+_vendor
+tests
+preview.html
+*.bat
+*.md
+.env
+.env.*
+docker-compose*.yml
+Caddyfile
+**/__pycache__
+**/*.tmp

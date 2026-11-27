@@ -1,0 +1,38 @@
+# Chạy trên máy chủ: trang + admin (app) sau Caddy (tự cấp HTTPS cho tên miền).
+#   cp .env.example .env   # rồi điền DOMAIN, IMAGE, tài khoản admin
+#   docker compose up -d
+# Chạy thử trên máy (không HTTPS): docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+services:
+  app:
+    image: ${IMAGE:-ghcr.io/OWNER/REPO:latest}
+    build: .
+    restart: unless-stopped
+    environment:
+      CST_ADMIN_USER: ${CST_ADMIN_USER:-}
+      CST_ADMIN_PASSWORD: ${CST_ADMIN_PASSWORD:-}
+      CST_COOKIE_SECURE: ${CST_COOKIE_SECURE:-1}
+    volumes:
+      - cst-data:/data          # trang đã sửa qua admin, ảnh/tệp tải lên, mật khẩu, bản lưu
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  cst-data:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,169 @@
+# CI/CD trang CST.,JSC
+#  - Mọi push / pull request: kiểm tra mã + kiểm thử máy chủ admin + build image Docker và chạy thử container.
+#  - Push lên nhánh main (hoặc tag v*): đẩy image lên GitHub Container Registry (ghcr.io/<owner>/<repo>).
+#  - Deploy lên máy chủ: TẮT sẵn. Bật khi có máy chủ — xem DEPLOY.md (biến DEPLOY_ENABLED + các secret SSH).
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Kiểm tra mã + kiểm thử
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cú pháp Python
+        run: python -m py_compile admin/server.py docker/seed.py tests/smoke_test.py
+
+      - name: Cú pháp JavaScript (admin + các đoạn script trong index.html)
+        run: |
+          node --check admin/admin.js
+          python - <<'PY'
+          import re, subprocess, tempfile, os, sys
+          html = open("index.html", encoding="utf-8").read()
+          bad = 0
+          for i, m in enumerate(re.finditer(r'<script(?P<attrs>[^>]*)>(?P<code>.*?)</script>', html, re.S)):
+              attrs = m.group("attrs")
+              if "src=" in attrs or re.search(r'type="(importmap|application/json)"', attrs):
+                  continue
+              ext = ".mjs" if 'type="module"' in attrs else ".js"
+              with tempfile.NamedTemporaryFile("w", suffix=ext, delete=False, encoding="utf-8") as f:
+                  f.write(m.group("code"))
+              r = subprocess.run(["node", "--check", f.name], capture_output=True, text=True)
+              os.unlink(f.name)
+              if r.returncode:
+                  bad += 1
+                  print(f"Lỗi cú pháp ở script thứ {i + 1}:\n{r.stderr}")
+          sys.exit(1 if bad else 0)
+          PY
+
+      - name: Dữ liệu JSON của hành trình 3D hợp lệ
+        run: |
+          python - <<'PY'
+          import json, re
+          html = open("index.html", encoding="utf-8").read()
+          m = re.search(r'id="featured-data">(.*?)</script>', html, re.S)
+          data = json.loads(m.group(1))
+          assert data and all(c["images"] for c in data), "featured-data rỗng"
+          print(f"{len(data)} công trình trong hành trình 3D")
+          PY
+
+      - name: Kiểm thử máy chủ admin + chép trang
+        run: python tests/smoke_test.py
+
+  docker:
+    name: Build + chạy thử image Docker
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tên image (chữ thường)
+        id: meta
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: cst-site:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Chạy thử container
+        env:
+          CST_ADMIN_USER: ci
+          CST_ADMIN_PASSWORD: ci-${{ github.run_id }}
+        run: |
+          docker run -d --name cst -p 8080:8080 \
+            -e CST_ADMIN_USER -e CST_ADMIN_PASSWORD -e CST_COOKIE_SECURE=0 cst-site:ci
+          for i in $(seq 1 30); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' cst)" = healthy ] && break
+            sleep 2
+          done
+          docker inspect -f 'Trạng thái: {{.State.Health.Status}}' cst
+          python3 tests/smoke_test.py --url http://127.0.0.1:8080
+          echo "--- Khởi động lại: dữ liệu admin vẫn còn ---"
+          docker restart cst
+          sleep 4
+          python3 tests/smoke_test.py --url http://127.0.0.1:8080
+          docker logs cst | tail -n 20
+
+      - name: Đăng nhập GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Đẩy image (latest + mã commit + tag phiên bản)
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:sha-${{ github.sha }}
+            ${{ github.ref == 'refs/heads/main' && format('{0}:latest', steps.meta.outputs.image) || '' }}
+            ${{ startsWith(github.ref, 'refs/tags/v') && format('{0}:{1}', steps.meta.outputs.image, github.ref_name) || '' }}
+          cache-from: type=gha
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+  deploy:
+    name: Deploy lên máy chủ
+    needs: docker
+    # Tắt cho tới khi có máy chủ: đặt biến repo DEPLOY_ENABLED=true (Settings → Secrets and variables → Actions → Variables).
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: SSH vào máy chủ, kéo image mới và khởi động lại
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            set -e
+            cd ${{ vars.DEPLOY_PATH || '~/cst-site' }}
+            # Image riêng tư thì cần token đọc gói (read:packages); image công khai thì bỏ trống 2 secret này.
+            TOKEN='${{ secrets.GHCR_READ_TOKEN }}'
+            if [ -n "$TOKEN" ]; then echo "$TOKEN" | docker login ghcr.io -u '${{ secrets.GHCR_READ_USER }}' --password-stdin; fi
+            export IMAGE="${{ needs.docker.outputs.image }}:sha-${{ github.sha }}"
+            sed -i "s#^IMAGE=.*#IMAGE=${IMAGE}#" .env
+            docker compose pull app
+            docker compose up -d
+            docker image prune -f

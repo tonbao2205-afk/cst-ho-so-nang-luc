@@ -1,0 +1,917 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body><title>CST.,JSC Hồ sơ năng lực</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Công ty Cổ phần Xây dựng Công trình Văn hóa Thể thao và Du lịch — tu bổ, tôn tạo và phục hồi di tích lịch sử văn hóa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Oswald:wght@600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap">
+<style>/* Bố cục: phần "Hành trình" là gian đình sơn then 3D, cuộn theo trục dọc;
+   phần "Hồ sơ" là trang giấy dó có logo chìm cố định phía sau. Màu chủ đạo lấy từ logo. */
+:root {
+  --son: #952E27;          /* đỏ logo */
+  --son-deep: #6A1D18;
+  --then: #1A1210;         /* sơn then */
+  --then-2: #2B1D19;
+  --giay: #F5EEDF;         /* giấy dó */
+  --giay-2: #EBE0C9;
+  --thep: #C49A4A;         /* vàng thếp: chỉ trang trí */
+  --thep-sang: #E2C27A;    /* vàng quỳ sáng: chữ trên nền tối */
+  --muc: #5C4E44;
+  --ink: #241915;
+  --reu: #56624A;
+  --line: rgba(90, 53, 34, 0.22);
+
+  --f-display: "Playfair Display", "Noto Serif", Georgia, serif;
+  --f-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --f-logo: "Oswald", "Arial Narrow", sans-serif;
+
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.6rem;
+  --step-3: clamp(1.9rem, 4vw, 2.6rem);
+  --step-4: clamp(2.4rem, 6.5vw, 4.6rem);
+
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  --max: 1120px;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--giay);
+  color: var(--ink);
+  font: 400 var(--step-0)/1.65 var(--f-body);
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 30; background: var(--then);
+}
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+a { color: var(--son); }
+:focus-visible { outline: 2px solid var(--thep); outline-offset: 3px; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+
+/* ---------- Logo chìm luôn nằm sau trang ---------- */
+.watermark {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  display: grid; place-items: center;
+}
+.watermark svg { width: min(92vw, 1100px); opacity: 0.06; }
+
+/* ---------- Thanh đầu trang ---------- */
+.site-header {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: rgba(26, 18, 16, 0.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(196, 154, 74, 0.35);
+}
+.site-header .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--giay); text-decoration: none; min-width: 0; }
+.brand svg { width: 64px; flex: none; }
+.brand span { min-width: 0; }
+.brand b { font: 600 1.05rem/1 var(--f-logo); letter-spacing: 0.06em; color: var(--thep-sang); }
+.brand small { display: block; font-size: 0.72rem; color: var(--giay-2); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.nav a { color: var(--giay-2); text-decoration: none; font-size: var(--step--1); padding: 6px 10px; border-radius: 2px; }
+.nav a:hover { color: var(--thep-sang); background: rgba(196, 154, 74, 0.12); }
+@media (max-width: 760px) { .nav { display: none; } }
+
+/* ---------- Hành trình 3D ---------- */
+.journey { position: relative; background: var(--then); color: var(--giay); overflow: clip; }
+/* clip: giữ khung 3D sticky không tràn sang phần hồ sơ bên dưới (margin-bottom âm). */
+.journey__stage { position: sticky; top: 0; height: 100vh; height: 100svh; margin-bottom: -100vh; margin-bottom: -100svh; overflow: hidden; }
+.journey__stage canvas { display: block; width: 100%; height: 100%; }
+/* Tối dần về phía chữ để tiêu đề và khung thông tin luôn đọc rõ trên nền trống đồng. */
+.journey__stage::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(26, 18, 16, .88) 0%, rgba(26, 18, 16, .55) 38%, transparent 62%); }
+@media (max-width: 760px) {
+  .journey__stage::after { background: linear-gradient(0deg, rgba(26, 18, 16, .9) 0%, rgba(26, 18, 16, .5) 50%, transparent 75%); }
+}
+html:not(.has-3d) .journey__stage { display: none; }
+html:not(.has-3d) .journey { background: var(--then) radial-gradient(ellipse at 50% 0%, var(--son-deep), transparent 70%); }
+
+.step { position: relative; min-height: 100vh; min-height: 100svh; display: flex; align-items: center; padding-block: 96px; }
+html:not(.has-3d) .step { min-height: 0; padding-block: 56px; }
+.step .wrap { width: 100%; }
+
+.intro { max-width: 640px; display: grid; gap: 18px; }
+.intro .eyebrow { color: var(--thep-sang); }
+.intro h1 { font-size: var(--step-4); color: var(--giay); }
+.intro h1 em { font-style: italic; color: var(--thep-sang); }
+.intro p { color: var(--giay-2); font-size: var(--step-1); max-width: 34ch; margin: 0; }
+.intro .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: var(--step--1); color: var(--giay-2); }
+.intro .facts b { color: var(--thep-sang); font-variant-numeric: tabular-nums; font-size: var(--step-1); display: block; font-family: var(--f-display); }
+.scroll-hint { font-size: var(--step--1); color: var(--thep-sang); letter-spacing: 0.08em; }
+html:not(.has-3d) .scroll-hint { display: none; }
+
+.chapter { max-width: 430px; background: rgba(26, 18, 16, 0.84); backdrop-filter: blur(6px);
+  border: 1px solid rgba(196, 154, 74, 0.45); padding: 26px 26px 22px; display: grid; gap: 12px; }
+html:not(.has-3d) .chapter { max-width: none; }
+.chapter .eyebrow { color: var(--thep-sang); }
+.chapter h2 { font-size: var(--step-3); color: var(--giay); }
+.chapter .place { color: var(--giay-2); margin: 0; }
+.chapter dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: var(--step--1); }
+.chapter dt { color: var(--thep-sang); }
+.chapter dd { margin: 0; font-variant-numeric: tabular-nums; }
+.chapter .story { margin: 0; color: var(--giay-2); }
+.chapter figure { margin: 0; }
+.chapter .gallery { display: none; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+html:not(.has-3d) .chapter .gallery { display: grid; }
+.chapter .gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.chapter figcaption, .chapter .captions { font-size: 0.8rem; color: var(--giay-2); opacity: 0.85; }
+.chapter .captions { margin: 0; padding-left: 18px; }
+html:not(.has-3d) .chapter .captions { display: none; }
+.badge { justify-self: start; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 2px 8px; border: 1px solid currentColor; color: var(--thep-sang); }
+
+@media (max-width: 760px) {
+  html.has-3d .step { align-items: flex-end; }
+  html.has-3d .intro { padding-top: 34vh; }
+  html.has-3d .chapter { max-width: none; padding: 18px 18px 16px; gap: 8px; }
+  /* Chừa nửa trên màn cho bánh xe ảnh. */
+  html.has-3d .chapter-step { padding-bottom: 20px; }
+  html.has-3d .chapter .captions { display: none; }
+}
+
+/* ---------- Hồ sơ ---------- */
+.eyebrow { font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
+.profile { position: relative; }
+.section { scroll-margin-top: 72px; padding-block: 64px; border-top: 1px solid var(--line); }
+.section__head { display: grid; gap: 6px; margin-bottom: 28px; }
+.section__head .eyebrow { color: var(--son); display: flex; gap: 12px; flex-wrap: wrap; }
+.section__head .src { color: var(--muc); font-weight: 500; letter-spacing: 0.06em; }
+.section__head h2 { font-size: var(--step-3); color: var(--ink); }
+.lead { font-size: var(--step-1); max-width: 62ch; margin: 0; }
+.prose p { max-width: 68ch; }
+
+.check-panel { background: var(--then); color: var(--giay); padding: 24px; display: grid; gap: 10px; border-left: 4px solid var(--son); }
+.check-panel h2 { font-size: var(--step-2); color: var(--thep-sang); }
+.check-panel ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.check-panel li { max-width: 80ch; }
+.check-panel code { color: var(--thep-sang); }
+
+.split { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 40px; }
+@media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); } }
+
+.values { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.values li { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; }
+.values svg { width: 36px; height: 36px; color: var(--son); }
+.motto { font-family: var(--f-display); font-style: italic; font-size: var(--step-1); color: var(--son); }
+
+.facts-list { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; align-content: start; }
+.facts-list dt { color: var(--muc); font-size: var(--step--1); }
+.facts-list dd { margin: 0; font-weight: 500; }
+
+.certs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.cert { background: var(--then); color: var(--giay); padding: 22px; display: grid; gap: 10px; align-content: start;
+  border: 1px solid var(--thep); box-shadow: inset 0 0 0 5px var(--then), inset 0 0 0 6px rgba(196, 154, 74, 0.5); }
+.cert h3 { font-size: var(--step-1); color: var(--thep-sang); }
+.cert dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: var(--step--1); }
+.cert dt { color: var(--giay-2); opacity: 0.75; }
+.cert dd { margin: 0; font-variant-numeric: tabular-nums; }
+.cert ul { margin: 0; padding-left: 18px; }
+.cert .src { font-size: 0.75rem; color: var(--giay-2); opacity: 0.7; }
+
+.lines { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 80ch; }
+
+/* sơ đồ tổ chức */
+.org { display: grid; gap: 14px; justify-items: center; text-align: center; }
+.org__row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; position: relative; }
+.org__node { background: #fffaf0; border: 1px solid var(--line); padding: 10px 14px; min-width: 150px; font-size: var(--step--1); }
+.org__node--top { background: var(--son); color: var(--giay); border-color: var(--son); font-weight: 600; }
+.org__node--dark { background: var(--then); color: var(--thep-sang); border-color: var(--then); }
+.org__link { width: 1px; height: 16px; background: var(--son); }
+
+/* bảng */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); background: rgba(255, 250, 240, 0.7); }
+table { border-collapse: collapse; width: 100%; font-size: var(--step--1); }
+th, td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { background: var(--then); color: var(--thep-sang); font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody tr:hover { background: rgba(149, 46, 39, 0.05); }
+td .tag { display: inline-block; margin-top: 4px; font-size: 0.7rem; padding: 1px 6px; color: var(--giay); background: var(--reu); }
+td .tag--civil { background: var(--muc); }
+td .tag--unknown { background: var(--thep); color: var(--ink); }
+.tfoot td { font-weight: 600; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.chip { font: inherit; font-size: var(--step--1); padding: 6px 14px; border: 1px solid var(--son); background: transparent; color: var(--son); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--son); color: var(--giay); }
+.toolbar input { font: inherit; font-size: var(--step--1); padding: 7px 12px; border: 1px solid var(--line); background: #fffaf0; min-width: 0; flex: 1 1 220px; max-width: 360px; }
+.toolbar output { margin-left: auto; font-size: var(--step--1); color: var(--muc); font-variant-numeric: tabular-nums; }
+
+/* nhân sự */
+.staff { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.staff div { background: var(--giay); padding: 14px; display: grid; gap: 2px; }
+.staff b { font: 700 var(--step-2)/1 var(--f-display); color: var(--ink); font-variant-numeric: tabular-nums; }
+.staff span { font-size: var(--step--1); color: var(--muc); }
+.staff .hl { background: var(--then); }
+.staff .hl b { color: var(--thep-sang); }
+.staff .hl span { color: var(--giay-2); }
+
+/* doanh thu */
+.bars { display: grid; gap: 12px; max-width: 720px; }
+.bar { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; font-variant-numeric: tabular-nums; }
+.bar__track { position: relative; height: 34px; }
+.bar__fill { height: 100%; background: var(--son); }
+.bar__val { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--giay); font-size: var(--step--1); white-space: nowrap; }
+.note { font-size: var(--step--1); color: var(--muc); max-width: 70ch; }
+
+.contact { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.contact div { display: grid; gap: 4px; }
+.contact dt { font-size: var(--step--1); color: var(--muc); }
+.contact dd { margin: 0; font-weight: 500; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.copy { font: inherit; font-size: 0.75rem; padding: 2px 8px; border: 1px solid var(--line); background: transparent; color: var(--son); cursor: pointer; }
+
+.site-footer { background: var(--then); color: var(--giay-2); padding-block: 36px; font-size: var(--step--1); }
+.site-footer .wrap { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+.site-footer svg { width: 120px; }
+.site-footer b { color: var(--thep-sang); }
+
+/* hoa văn sóng nước phân cách */
+.wave { display: block; width: 100%; height: 14px; color: var(--thep); }
+
+/* ---------- Hoạt cảnh mở đầu: trống đồng mở cửa + chim Lạc bay ---------- */
+.opening { display: none; }
+html.opening-on { overflow: hidden; }
+html.opening-on .opening {
+  display: grid; place-items: center; position: fixed; inset: 0; z-index: 100; cursor: pointer; }
+/* Nền tối tách riêng để mờ dần trong khi hai cánh cửa trống mở ra. */
+.opening::before { content: ""; position: absolute; inset: 0;
+  background: var(--then) radial-gradient(circle at 50% 46%, #3a2414, transparent 62%); transition: opacity .9s ease .5s; }
+.opening__drum { --size: min(78vmin, 620px); position: relative; width: var(--size); height: var(--size);
+  display: flex; perspective: 1400px; }
+.opening__door { position: relative; width: 50%; height: 100%; overflow: hidden;
+  transition: transform 1.3s cubic-bezier(.7, 0, .2, 1) .15s, opacity .5s ease 1.1s; }
+.opening__door--left { transform-origin: 0 50%; }
+.opening__door--right { transform-origin: 100% 50%; }
+.opening__door img { position: absolute; top: 0; width: 200%; height: 100%; max-width: none; border-radius: 50%;
+  background: #4A3219; animation: drum-turn 18s linear infinite;
+  box-shadow: inset 0 0 0 3px #2A1A0C, 0 18px 40px rgba(0, 0, 0, .55); }
+.opening__door--left img { left: 0; }
+.opening__door--right img { right: 0; }
+/* Khe cửa phát sáng giữa hai nửa trống trong lúc tải. */
+.opening__drum::after { content: ""; position: absolute; left: 50%; top: 4%; bottom: 4%; width: 2px; margin-left: -1px;
+  background: linear-gradient(transparent, var(--thep-sang), transparent); opacity: .7; animation: seam 1.6s ease-in-out infinite alternate; }
+.opening__status { position: absolute; bottom: max(28px, 6vh); left: 0; right: 0; margin: 0; text-align: center;
+  color: var(--giay-2); font-size: var(--step--1); display: grid; gap: 4px; transition: opacity .3s; }
+.opening__status small { opacity: .6; }
+
+.opening__flock { position: absolute; inset: 0; pointer-events: none; }
+.crane { position: absolute; left: 50%; top: 50%; width: clamp(90px, 14vw, 180px); margin: -50px 0 0 -60px;
+  fill: var(--thep-sang); opacity: 0; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .5));
+  transition: transform 1.5s cubic-bezier(.3, .1, .25, 1), opacity .35s ease; }
+.crane__wing { transform-origin: 95% 100%; transform-box: fill-box; animation: flap .32s ease-in-out infinite alternate; }
+
+.opening.is-open::before { opacity: 0; }
+.opening.is-open .opening__door--left { transform: translateX(-62vw) rotateY(68deg); opacity: 0; }
+.opening.is-open .opening__door--right { transform: translateX(62vw) rotateY(-68deg); opacity: 0; }
+.opening.is-open .opening__drum::after, .opening.is-open .opening__status { opacity: 0; animation: none; }
+.opening.is-open .crane { opacity: 1; }
+/* Chim hướng đầu sang phải; hai con bay sang trái được lật ngang. */
+.opening.is-open .crane--1 { transform: translate(-58vw, -24vh) scaleX(-1) scale(1.1); }
+.opening.is-open .crane--2 { transform: translate(-54vw, 14vh) scaleX(-1) scale(.8); transition-delay: .12s; }
+.opening.is-open .crane--3 { transform: translate(58vw, -18vh) scale(1.1); }
+.opening.is-open .crane--4 { transform: translate(54vw, 20vh) scale(.8); transition-delay: .12s; }
+
+@keyframes drum-turn { to { transform: rotate(360deg); } }
+@keyframes seam { from { opacity: .25; } to { opacity: .9; } }
+@keyframes flap { from { transform: scaleY(1); } to { transform: scaleY(-.35); } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+
+<link rel="preload" as="image" href="img/trong-dong.jpg">
+<script>
+  // Quyết định trước khi vẽ: có chạy hoạt cảnh mở đầu không (tránh nháy).
+  (() => {
+    try {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || sessionStorage.getItem('cst-opened')) return;
+    } catch { /* không đọc được sessionStorage: vẫn chạy */ }
+    document.documentElement.classList.add('opening-on');
+  })();
+</script>
+<div class="opening" data-opening aria-hidden="true">
+  <div class="opening__drum">
+    <div class="opening__door opening__door--left"><img src="img/trong-dong.jpg" alt="" width="1200" height="1200" decoding="async"></div>
+    <div class="opening__door opening__door--right"><img src="img/trong-dong.jpg" alt="" width="1200" height="1200" decoding="async"></div>
+  </div>
+  <div class="opening__flock"><svg class="crane crane--1" viewBox="-56 -44 116 64" aria-hidden="true"><path class="crane__body" d="M-30,0 C-22,-6 4,-7 16,-4 L22,-7 L27,-5 L56,-3 L27,-1 L22,2 C10,6 -18,6 -30,2 ZM18,-6 C10,-14 0,-17 -10,-18 C-2,-13 8,-9 14,-5 ZM-30,0 L-50,-8 L-46,0 L-52,6 L-30,3 ZM-8,4 L-36,14 L-34,16 L-4,6 Z"/><path class="crane__wing" d="M8,-4 C2,-20 -12,-34 -30,-40 C-24,-30 -18,-18 -16,-4 Z M-2,-4 C-8,-14 -18,-22 -32,-24 C-26,-16 -22,-10 -22,-3 Z"/></svg><svg class="crane crane--2" viewBox="-56 -44 116 64" aria-hidden="true"><path class="crane__body" d="M-30,0 C-22,-6 4,-7 16,-4 L22,-7 L27,-5 L56,-3 L27,-1 L22,2 C10,6 -18,6 -30,2 ZM18,-6 C10,-14 0,-17 -10,-18 C-2,-13 8,-9 14,-5 ZM-30,0 L-50,-8 L-46,0 L-52,6 L-30,3 ZM-8,4 L-36,14 L-34,16 L-4,6 Z"/><path class="crane__wing" d="M8,-4 C2,-20 -12,-34 -30,-40 C-24,-30 -18,-18 -16,-4 Z M-2,-4 C-8,-14 -18,-22 -32,-24 C-26,-16 -22,-10 -22,-3 Z"/></svg><svg class="crane crane--3" viewBox="-56 -44 116 64" aria-hidden="true"><path class="crane__body" d="M-30,0 C-22,-6 4,-7 16,-4 L22,-7 L27,-5 L56,-3 L27,-1 L22,2 C10,6 -18,6 -30,2 ZM18,-6 C10,-14 0,-17 -10,-18 C-2,-13 8,-9 14,-5 ZM-30,0 L-50,-8 L-46,0 L-52,6 L-30,3 ZM-8,4 L-36,14 L-34,16 L-4,6 Z"/><path class="crane__wing" d="M8,-4 C2,-20 -12,-34 -30,-40 C-24,-30 -18,-18 -16,-4 Z M-2,-4 C-8,-14 -18,-22 -32,-24 C-26,-16 -22,-10 -22,-3 Z"/></svg><svg class="crane crane--4" viewBox="-56 -44 116 64" aria-hidden="true"><path class="crane__body" d="M-30,0 C-22,-6 4,-7 16,-4 L22,-7 L27,-5 L56,-3 L27,-1 L22,2 C10,6 -18,6 -30,2 ZM18,-6 C10,-14 0,-17 -10,-18 C-2,-13 8,-9 14,-5 ZM-30,0 L-50,-8 L-46,0 L-52,6 L-30,3 ZM-8,4 L-36,14 L-34,16 L-4,6 Z"/><path class="crane__wing" d="M8,-4 C2,-20 -12,-34 -30,-40 C-24,-30 -18,-18 -16,-4 Z M-2,-4 C-8,-14 -18,-22 -32,-24 C-26,-16 -22,-10 -22,-3 Z"/></svg></div>
+  <p class="opening__status">Đang mở hồ sơ năng lực<small>Chạm để bỏ qua</small></p>
+</div>
+<script>// Hoạt cảnh mở đầu: mặt trống đồng xoay trong lúc tải, rồi tách đôi như hai cánh cửa,
+// chim Lạc vàng đồng bay sang hai bên. Mỗi phiên chỉ chạy một lần; chạm/bấm phím để bỏ qua.
+(() => {
+  const root = document.documentElement;
+  const overlay = document.querySelector('[data-opening]');
+  if (!overlay || !root.classList.contains('opening-on')) return;
+
+  const MIN_SHOW_MS = 1100; // đủ để thấy mặt trống
+  const MAX_WAIT_MS = 4000; // mạng chậm vẫn không giữ người xem quá lâu
+  const OPEN_MS = 1700; // khớp thời lượng transition trong CSS
+  const shownAt = performance.now();
+  let opened = false;
+
+  const finish = () => {
+    root.classList.remove('opening-on');
+    overlay.remove();
+    try { sessionStorage.setItem('cst-opened', '1'); } catch { /* chế độ riêng tư: bỏ qua */ }
+  };
+  const open = () => {
+    if (opened) return;
+    opened = true;
+    overlay.classList.add('is-open');
+    window.setTimeout(finish, OPEN_MS);
+  };
+  const openAfterMinimum = () => {
+    window.setTimeout(open, Math.max(0, MIN_SHOW_MS - (performance.now() - shownAt)));
+  };
+
+  if (document.readyState === 'complete') openAfterMinimum();
+  else window.addEventListener('load', openAfterMinimum, { once: true });
+  window.setTimeout(open, MAX_WAIT_MS);
+  overlay.addEventListener('click', open);
+  window.addEventListener('keydown', open, { once: true });
+})();
+</script>
+
+<div class="watermark" aria-hidden="true"><svg viewBox="0 0 400 200" role="img" aria-label="Logo chìm">
+  <path d="M200 4 L396 100 L200 196 L4 100 Z" fill="#952E27"/>
+  <g fill="none" stroke="#F5EEDF">
+    <path d="M200 14 L376 100 L200 186 L24 100 Z" stroke-width="2.5"/>
+    <path d="M200 28 L112 64 L288 64 Z" stroke-width="3"/>
+    <path d="M200 38 L140 60 L260 60 Z" stroke-width="1.5"/>
+    <rect x="186" y="134" width="28" height="26" stroke-width="3"/>
+  </g>
+  <g fill="#F5EEDF">
+    <rect x="100" y="66" width="200" height="7"/>
+    <text x="200" y="113" text-anchor="middle" font-family="Oswald, 'Arial Narrow', sans-serif" font-weight="600" font-size="38">CST.,JSC</text>
+    <rect x="118" y="120" width="164" height="6"/>
+  </g>
+</svg></div>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="#hanh-trinh"><svg viewBox="0 0 400 200" role="img" aria-label="Logo CST.,JSC">
+  <path d="M200 4 L396 100 L200 196 L4 100 Z" fill="#952E27"/>
+  <g fill="none" stroke="#F5EEDF">
+    <path d="M200 14 L376 100 L200 186 L24 100 Z" stroke-width="2.5"/>
+    <path d="M200 28 L112 64 L288 64 Z" stroke-width="3"/>
+    <path d="M200 38 L140 60 L260 60 Z" stroke-width="1.5"/>
+    <rect x="186" y="134" width="28" height="26" stroke-width="3"/>
+  </g>
+  <g fill="#F5EEDF">
+    <rect x="100" y="66" width="200" height="7"/>
+    <text x="200" y="113" text-anchor="middle" font-family="Oswald, 'Arial Narrow', sans-serif" font-weight="600" font-size="38">CST.,JSC</text>
+    <rect x="118" y="120" width="164" height="6"/>
+  </g>
+</svg><span><b>CST.,JSC</b><small>Công ty Cổ phần Xây dựng Công trình Văn hóa Thể thao và Du lịch</small></span></a>
+    <nav class="nav" aria-label="Mục lục">
+      <a href="#hanh-trinh">Hành trình</a><a href="#gioi-thieu">Giới thiệu</a><a href="#phap-ly">Pháp lý</a>
+      <a href="#cong-trinh">Công trình</a><a href="#lien-he">Liên hệ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="journey" id="hanh-trinh" data-journey aria-label="Hành trình các công trình tiêu biểu">
+    <div class="journey__stage" data-journey-stage aria-hidden="true"></div>
+    <div class="step"><div class="wrap"><div class="intro">
+      <p class="eyebrow">Hội Di sản Văn hóa Việt Nam · CST.,JSC</p>
+      <h1>Giữ hồn <em>di tích</em> Việt</h1>
+      <p>Gần 20 năm tu bổ, tôn tạo và phục hồi đình, chùa, đền và di tích lịch sử trên cả nước.</p>
+      <div class="facts"><span><b>2007</b>Năm thành lập</span><span><b>40</b>Công trình thi công</span><span><b>35</b>Công trình di tích</span></div>
+      <p class="scroll-hint">Cuộn xuống để đi qua từng công trình ↓</p>
+    </div></div></div>
+    <article class="step chapter-step"><div class="wrap"><div class="chapter">
+  <p class="eyebrow">Công trình số 10 / 40 · Di tích lịch sử</p>
+  <h2>Khu lưu niệm Cố Tổng Bí thư Nguyễn Văn Cừ</h2>
+  <p class="place">Phù Khê, Từ Sơn, Bắc Ninh</p>
+  <dl><dt>Thời gian</dt><dd>2011–2012 · 2022</dd><dt>Giá trị HĐ</dt><dd>28.026.014.000 đ + 2.571.025.000 đ (GĐ 2)</dd><dt>Chủ đầu tư</dt><dd>Sở Văn hoá, Thể thao và Du lịch tỉnh Bắc Ninh</dd></dl>
+  <p class="story">Nâng cấp, mở rộng khu lưu niệm (2011–2012) và cải tạo, mở rộng giai đoạn 2 (2022). Công trình được báo Bắc Ninh TV phỏng vấn và đưa tin.</p>
+  <span class="badge">Ảnh thực tế</span>
+  <ol class="captions"><li>Toàn cảnh khu lưu niệm sau khi hoàn thành</li><li>Lắp dựng khung gỗ nhà tưởng niệm</li></ol>
+  <div class="gallery"><figure><img src="img/nvc-tong-the.jpg" alt="Toàn cảnh khu lưu niệm sau khi hoàn thành — Khu lưu niệm Cố Tổng Bí thư Nguyễn Văn Cừ" loading="lazy" width="1280" height="960"><figcaption>Toàn cảnh khu lưu niệm sau khi hoàn thành</figcaption></figure><figure><img src="img/nvc-dung-khung-go.jpg" alt="Lắp dựng khung gỗ nhà tưởng niệm — Khu lưu niệm Cố Tổng Bí thư Nguyễn Văn Cừ" loading="lazy" width="1280" height="960"><figcaption>Lắp dựng khung gỗ nhà tưởng niệm</figcaption></figure></div>
+</div></div></article>
+<article class="step chapter-step"><div class="wrap"><div class="chapter">
+  <p class="eyebrow">Công trình số 7 / 40 · Di tích lịch sử văn hóa</p>
+  <h2>Chùa Sùng Nghiêm Diên Khánh</h2>
+  <p class="place">Văn Lộc, Hậu Lộc, Thanh Hóa</p>
+  <dl><dt>Thời gian</dt><dd>2010–2012</dd><dt>Giá trị HĐ</dt><dd>10.520.990.000 đ</dd><dt>Chủ đầu tư</dt><dd>UBND Huyện Hậu Lộc – tỉnh Thanh Hoá</dd></dl>
+  <p class="story">Tu bổ, tôn tạo di tích: tháo dỡ, phân loại và phục hồi các cấu kiện gỗ chạm khắc.</p>
+  <span class="badge">Ảnh thực tế</span>
+  <ol class="captions"><li>Cấu kiện gỗ chạm khắc được phân loại trước khi phục hồi</li><li>Lắp dựng lại cấu kiện</li></ol>
+  <div class="gallery"><figure><img src="img/sung-nghiem-cau-kien.jpg" alt="Cấu kiện gỗ chạm khắc được phân loại trước khi phục hồi — Chùa Sùng Nghiêm Diên Khánh" loading="lazy" width="1280" height="960"><figcaption>Cấu kiện gỗ chạm khắc được phân loại trước khi phục hồi</figcaption></figure><figure><img src="img/sung-nghiem-lap-dung.jpg" alt="Lắp dựng lại cấu kiện — Chùa Sùng Nghiêm Diên Khánh" loading="lazy" width="1280" height="960"><figcaption>Lắp dựng lại cấu kiện</figcaption></figure></div>
+</div></div></article>
+<article class="step chapter-step"><div class="wrap"><div class="chapter">
+  <p class="eyebrow">Công trình số 15 / 40 · Di tích lịch sử văn hóa</p>
+  <h2>Đền Phương Giai</h2>
+  <p class="place">Kỳ Bắc, Kỳ Anh</p>
+  <dl><dt>Thời gian</dt><dd>2016</dd><dt>Giá trị HĐ</dt><dd>10.611.787.000 đ</dd><dt>Chủ đầu tư</dt><dd>Ban quản lý dự án đầu tư XDCB huyện Kỳ Anh</dd></dl>
+  <p class="story">Tu bổ, tôn tạo di tích; bức bình phong hổ phù trước đền.</p>
+  <span class="badge">Ảnh thực tế</span>
+  <ol class="captions"><li>Bức bình phong hổ phù và toàn cảnh công trình</li><li>Đền trong quá trình thi công</li></ol>
+  <div class="gallery"><figure><img src="img/phuong-giai-binh-phong.jpg" alt="Bức bình phong hổ phù và toàn cảnh công trình — Đền Phương Giai" loading="lazy" width="1280" height="960"><figcaption>Bức bình phong hổ phù và toàn cảnh công trình</figcaption></figure><figure><img src="img/phuong-giai-thi-cong.jpg" alt="Đền trong quá trình thi công — Đền Phương Giai" loading="lazy" width="1280" height="960"><figcaption>Đền trong quá trình thi công</figcaption></figure></div>
+</div></div></article>
+<article class="step chapter-step"><div class="wrap"><div class="chapter">
+  <p class="eyebrow">Công trình số 35 / 40 · Di tích</p>
+  <h2>Chùa Hoa Sơn</h2>
+  <p class="place">Kim Hoa, Mê Linh, Hà Nội</p>
+  <dl><dt>Thời gian</dt><dd>2024–2025</dd><dt>Giá trị HĐ</dt><dd>30.229.274.000 đ</dd><dt>Chủ đầu tư</dt><dd>Ban QLDA đầu tư – Hạ tầng xã Quang Minh</dd></dl>
+  <p class="story">Tu bổ, tôn tạo di tích: Tam bảo, nhà Tổ, sân và nhà khách; nội thất và cấu kiện gỗ.</p>
+  <span class="badge">Ảnh thực tế</span>
+  <ol class="captions"><li>Hiên trước nhà Tổ</li><li>Sân chùa</li><li>Nội thất và cấu kiện gỗ</li></ol>
+  <div class="gallery"><figure><img src="img/hoa-son-hien-nha-to.jpg" alt="Hiên trước nhà Tổ — Chùa Hoa Sơn" loading="lazy" width="1280" height="960"><figcaption>Hiên trước nhà Tổ</figcaption></figure><figure><img src="img/hoa-son-san.jpg" alt="Sân chùa — Chùa Hoa Sơn" loading="lazy" width="1280" height="960"><figcaption>Sân chùa</figcaption></figure><figure><img src="img/hoa-son-noi-that.jpg" alt="Nội thất và cấu kiện gỗ — Chùa Hoa Sơn" loading="lazy" width="1280" height="960"><figcaption>Nội thất và cấu kiện gỗ</figcaption></figure></div>
+</div></div></article>
+<article class="step chapter-step"><div class="wrap"><div class="chapter">
+  <p class="eyebrow">Công trình số 36 / 40 · Di tích</p>
+  <h2>Đình Yên Mạc</h2>
+  <p class="place">Liên Mạc, Mê Linh, Hà Nội</p>
+  <dl><dt>Thời gian</dt><dd>2024–2025</dd><dt>Giá trị HĐ</dt><dd>16.746.236.000 đ</dd><dt>Chủ đầu tư</dt><dd>Ban QLDA đầu tư – Hạ tầng xã Yên Lãng</dd></dl>
+  <p class="story">Tu bổ, tôn tạo di tích: cổng đình, sân vườn, cấu kiện gỗ bên trong Đại Đình.</p>
+  <span class="badge">Ảnh thực tế</span>
+  <ol class="captions"><li>Cổng đình nhìn từ phía trước</li><li>Cấu kiện gỗ bên trong Đại Đình</li><li>Nội thất Đại Đình</li></ol>
+  <div class="gallery"><figure><img src="img/yen-mac-cong.jpg" alt="Cổng đình nhìn từ phía trước — Đình Yên Mạc" loading="lazy" width="1280" height="960"><figcaption>Cổng đình nhìn từ phía trước</figcaption></figure><figure><img src="img/yen-mac-cau-kien.jpg" alt="Cấu kiện gỗ bên trong Đại Đình — Đình Yên Mạc" loading="lazy" width="1280" height="960"><figcaption>Cấu kiện gỗ bên trong Đại Đình</figcaption></figure><figure><img src="img/yen-mac-noi-that.jpg" alt="Nội thất Đại Đình — Đình Yên Mạc" loading="lazy" width="1280" height="960"><figcaption>Nội thất Đại Đình</figcaption></figure></div>
+</div></div></article>
+<article class="step chapter-step"><div class="wrap"><div class="chapter">
+  <p class="eyebrow">Công trình số 38 / 40 · Di tích · đang thi công</p>
+  <h2>Đình Lâm Hộ</h2>
+  <p class="place">Thanh Lâm, Mê Linh, Hà Nội</p>
+  <dl><dt>Thời gian</dt><dd>2025–nay</dd><dt>Giá trị HĐ</dt><dd>23.940.961.000 đ</dd><dt>Chủ đầu tư</dt><dd>Ban QLDA đầu tư – Hạ tầng xã Quang Minh</dd></dl>
+  <p class="story">Đại Đình đang dựng gỗ — cập nhật tháng 5/2026.</p>
+  <span class="badge">Ảnh thực tế</span>
+  <ol class="captions"><li>Đại Đình đang dựng gỗ</li><li>Hệ khung cột, vì kèo gỗ</li><li>Mặt trước Đại Đình đang lắp dựng</li></ol>
+  <div class="gallery"><figure><img src="img/lam-ho-dung-go.jpg" alt="Đại Đình đang dựng gỗ — Đình Lâm Hộ" loading="lazy" width="1280" height="960"><figcaption>Đại Đình đang dựng gỗ</figcaption></figure><figure><img src="img/lam-ho-khung.jpg" alt="Hệ khung cột, vì kèo gỗ — Đình Lâm Hộ" loading="lazy" width="1280" height="960"><figcaption>Hệ khung cột, vì kèo gỗ</figcaption></figure><figure><img src="img/lam-ho-dai-dinh.jpg" alt="Mặt trước Đại Đình đang lắp dựng — Đình Lâm Hộ" loading="lazy" width="1280" height="960"><figcaption>Mặt trước Đại Đình đang lắp dựng</figcaption></figure></div>
+</div></div></article>
+  </section>
+  <script type="application/json" id="featured-data">[{"title": "Khu lưu niệm Cố Tổng Bí thư Nguyễn Văn Cừ", "images": [["nvc-tong-the", "Toàn cảnh khu lưu niệm sau khi hoàn thành"], ["nvc-dung-khung-go", "Lắp dựng khung gỗ nhà tưởng niệm"]]}, {"title": "Chùa Sùng Nghiêm Diên Khánh", "images": [["sung-nghiem-cau-kien", "Cấu kiện gỗ chạm khắc được phân loại trước khi phục hồi"], ["sung-nghiem-lap-dung", "Lắp dựng lại cấu kiện"]]}, {"title": "Đền Phương Giai", "images": [["phuong-giai-binh-phong", "Bức bình phong hổ phù và toàn cảnh công trình"], ["phuong-giai-thi-cong", "Đền trong quá trình thi công"]]}, {"title": "Chùa Hoa Sơn", "images": [["hoa-son-hien-nha-to", "Hiên trước nhà Tổ"], ["hoa-son-san", "Sân chùa"], ["hoa-son-noi-that", "Nội thất và cấu kiện gỗ"]]}, {"title": "Đình Yên Mạc", "images": [["yen-mac-cong", "Cổng đình nhìn từ phía trước"], ["yen-mac-cau-kien", "Cấu kiện gỗ bên trong Đại Đình"], ["yen-mac-noi-that", "Nội thất Đại Đình"]]}, {"title": "Đình Lâm Hộ", "images": [["lam-ho-dung-go", "Đại Đình đang dựng gỗ"], ["lam-ho-khung", "Hệ khung cột, vì kèo gỗ"], ["lam-ho-dai-dinh", "Mặt trước Đại Đình đang lắp dựng"]]}]</script>
+
+  <div class="profile">
+    <section class="section"><div class="wrap">
+      <div class="check-panel">
+        <h2>Trang kiểm tra hồ sơ năng lực</h2>
+        <p>Mỗi mục bên dưới ghi trang nguồn trong HSNL_2026.pdf để đối chiếu. Những điểm khác với PDF:</p>
+        <ul><li>Tên viết tắt thống nhất <code>CST.,JSC</code> theo logo (giấy ĐKDN ghi CTCO., JSC).</li><li>Địa chỉ thống nhất theo mốc <code>P. Quan Hoa, Q. Cầu Giấy</code>; email <code>ditichvanhoa@gmail.com</code>.</li><li>Bảng công trình: dòng 18, 20, 21 trong PDF bị đảo cột “Địa điểm” và “Chủ đầu tư” — đã đảo lại.</li><li>Sửa chính tả: “di tịch” → “di tích”, “Hà Tỉnh” → “Hà Tĩnh”, “Đĩnh lan” → “Đĩnh Lan”.</li><li>Danh mục thiết bị trong PDF thiếu STT 9 — trang này đánh số liền.</li><li>Dòng 15 ghi “huyện Kỳ Anh, tỉnh Nghệ An” — Kỳ Anh thuộc Hà Tĩnh, cần xác nhận (giữ nguyên chữ của PDF).</li><li>Dòng 12 “Công trình: Các Mạng Lào” chưa rõ là công trình gì — gắn nhãn “Cần xác nhận”.</li><li>Không đưa lên: số tài khoản ngân hàng, số định danh, ngày sinh, tỷ lệ sở hữu cổ phần.</li></ul>
+      </div>
+    </div></section>
+    <svg class="wave" viewBox="0 0 400 14" preserveAspectRatio="none" aria-hidden="true"><path fill="none" stroke="currentColor"
+ stroke-width="1.2" d="M0 7 Q10 0 20 7 T40 7 T60 7 T80 7 T100 7 T120 7 T140 7 T160 7 T180 7 T200 7 T220 7 T240 7 T260 7 T280 7 T300 7 T320 7 T340 7 T360 7 T380 7 T400 7"/></svg>
+    <section class="section" id="gioi-thieu"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Giới thiệu chung<span class="src">Nguồn: HSNL tr.11–14</span></p><h2>Công ty Cổ phần Xây dựng Công trình Văn hóa Thể thao và Du lịch</h2></header>
+  <div class="split"><div class="prose"><p>Công ty Cổ phần Xây dựng Công trình Văn hóa Thể thao và Du lịch là doanh nghiệp trực thuộc Hội Di sản Văn hóa Việt Nam, hoạt động theo giấy chứng nhận đăng ký doanh nghiệp số 0102381812 do Sở Kế hoạch và Đầu tư Hà Nội cấp lần đầu ngày 04/10/2007.</p><p>Gần 20 năm hoạt động trong lĩnh vực xây dựng, tu bổ, tôn tạo và phục hồi các công trình văn hóa, di tích lịch sử, tín ngưỡng và kiến trúc truyền thống, công ty đã tham gia thực hiện nhiều công trình tại các địa phương trên cả nước, với sự đồng hành của đội ngũ chuyên gia, nhà nghiên cứu thuộc Hội Di sản Văn hóa Việt Nam cùng các kỹ sư, kiến trúc sư, nghệ nhân và cán bộ kỹ thuật giàu kinh nghiệm.</p><p class="motto">“Hợp tác – Hiệu quả – Phát triển bền vững”</p>
+  <h3>Giá trị chúng tôi đề cao</h3><ul class="values"><li><svg viewBox="0 0 36 36" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4">
+  <path d="M18 8 C22 13 22 20 18 26 C14 20 14 13 18 8Z"/><path d="M18 26 C12 25 8 20 7 14 C12 15 16 19 18 26Z"/>
+  <path d="M18 26 C24 25 28 20 29 14 C24 15 20 19 18 26Z"/><path d="M8 29 H28"/></svg><span>Tôn trọng tính nguyên gốc và giá trị lịch sử của công trình</span></li><li><svg viewBox="0 0 36 36" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4">
+  <path d="M18 8 C22 13 22 20 18 26 C14 20 14 13 18 8Z"/><path d="M18 26 C12 25 8 20 7 14 C12 15 16 19 18 26Z"/>
+  <path d="M18 26 C24 25 28 20 29 14 C24 15 20 19 18 26Z"/><path d="M8 29 H28"/></svg><span>Kết hợp hài hòa giữa kỹ thuật hiện đại và phương pháp truyền thống</span></li><li><svg viewBox="0 0 36 36" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4">
+  <path d="M18 8 C22 13 22 20 18 26 C14 20 14 13 18 8Z"/><path d="M18 26 C12 25 8 20 7 14 C12 15 16 19 18 26Z"/>
+  <path d="M18 26 C24 25 28 20 29 14 C24 15 20 19 18 26Z"/><path d="M8 29 H28"/></svg><span>Đảm bảo chất lượng, tiến độ và tính bền vững lâu dài</span></li><li><svg viewBox="0 0 36 36" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4">
+  <path d="M18 8 C22 13 22 20 18 26 C14 20 14 13 18 8Z"/><path d="M18 26 C12 25 8 20 7 14 C12 15 16 19 18 26Z"/>
+  <path d="M18 26 C24 25 28 20 29 14 C24 15 20 19 18 26Z"/><path d="M8 29 H28"/></svg><span>Làm việc bằng trách nhiệm nghề nghiệp và sự trân trọng đối với di sản văn hóa dân tộc</span></li></ul></div>
+  <dl class="facts-list"><dt>Mã số doanh nghiệp</dt><dd>0102381812</dd><dt>Thành lập</dt><dd>04/10/2007</dd><dt>Vốn điều lệ</dt><dd>9.999.000.000 đồng</dd><dt>Người đại diện</dt><dd>Bà Lê Thị Lường — Giám đốc</dd><dt>Trực thuộc</dt><dd>Hội Di sản Văn hóa Việt Nam</dd><dt>Tên tiếng Anh</dt><dd>Tourism and Sports Culture Construction Joint Stock Company</dd></dl></div>
+</div></section>
+<section class="section" id="phap-ly"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Năng lực pháp lý<span class="src">Nguồn: HSNL tr.2–10</span></p><h2>Giấy phép và chứng chỉ</h2></header>
+  <div class="certs"><article class="cert"><h3>Giấy chứng nhận đủ điều kiện hành nghề bảo quản, tu bổ, phục hồi di tích</h3>
+  <dl><dt>Số</dt><dd>54.2025/GCN-SVHTT</dd><dt>Cơ quan cấp</dt><dd>Sở Văn hóa và Thể thao thành phố Hà Nội</dd><dt>Ngày cấp</dt><dd>22/09/2025</dd><dt>Hiệu lực đến</dt><dd>22/09/2030</dd></dl>
+  <div><p class="eyebrow" style="margin:0;color:var(--thep-sang)">Phạm vi</p><ul><li>Thi công tu bổ di tích</li></ul></div>
+  <p class="src">HSNL tr.7</p></article><article class="cert"><h3>Chứng chỉ năng lực hoạt động xây dựng</h3>
+  <dl><dt>Số</dt><dd>HAN-00029363</dd><dt>Cơ quan cấp</dt><dd>Sở Xây dựng thành phố Hà Nội</dd><dt>Ngày cấp</dt><dd>27/08/2019</dd><dt>Hiệu lực đến</dt><dd>21/08/2029</dd></dl>
+  <div><p class="eyebrow" style="margin:0;color:var(--thep-sang)">Phạm vi</p><ul><li>Thi công công trình dân dụng — Hạng II</li><li>Thi công công trình công nghiệp nhẹ — Hạng III</li></ul></div>
+  <p class="src">HSNL tr.8</p></article><article class="cert"><h3>Giấy chứng nhận đăng ký doanh nghiệp (công ty cổ phần)</h3>
+  <dl><dt>Số</dt><dd>0102381812</dd><dt>Cơ quan cấp</dt><dd>Phòng Đăng ký kinh doanh và Tài chính doanh nghiệp — Sở Tài chính Hà Nội</dd><dt>Ngày cấp</dt><dd>04/10/2007 (thay đổi lần 7: 25/06/2026)</dd></dl>
+  <div><p class="eyebrow" style="margin:0;color:var(--thep-sang)">Phạm vi</p><ul><li>Ngành chính: Hoạt động kiến trúc và tư vấn kỹ thuật có liên quan (7110)</li></ul></div>
+  <p class="src">HSNL tr.2</p></article></div>
+</div></section>
+<section class="section" id="nganh-nghe"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Ngành nghề kinh doanh chính<span class="src">Nguồn: HSNL tr.13</span></p><h2>Lĩnh vực hoạt động</h2></header>
+  <ol class="lines"><li>Xây dựng các công trình văn hóa, thể thao, du lịch, bảo tàng, công nghiệp, dân dụng, giao thông thủy lợi, thông tin liên lạc, hạ tầng kỹ thuật khu đô thị và công nghiệp</li><li>Tu bổ, phục hồi di tích lịch sử văn hóa, danh lam thắng cảnh</li><li>Lập tổng dự toán, thẩm tra thiết kế (chỉ thẩm tra trong phạm vi chứng chỉ đã được ký)</li><li>Tư vấn đấu thầu, lập hồ sơ mời thầu và đánh giá hồ sơ dự thầu xây lắp</li><li>Tư vấn xây dựng, lập dự toán các công trình văn hóa thể thao, du lịch, dân dụng, công nghiệp, giao thông, thủy lợi và cơ sở hạ tầng kỹ thuật; thẩm tra dự án đầu tư, thiết kế kỹ thuật, bản vẽ thi công, tổng dự toán</li><li>Lập dự án đầu tư, tu bổ, phục hồi di tích lịch sử văn hóa, danh lam thắng cảnh, bảo tàng, tượng đài</li><li>Tư vấn thiết kế quy hoạch xây dựng; thiết kế kiến trúc công trình</li><li>Giám sát thi công xây dựng công trình — lĩnh vực xây dựng và hoàn thiện</li></ol>
+</div></section>
+<section class="section" id="to-chuc"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Cơ cấu tổ chức<span class="src">Nguồn: HSNL tr.15</span></p><h2>Sơ đồ tổ chức</h2></header>
+  <div class="org">
+  <div class="org__row"><div class="org__node org__node--top">Hội đồng quản trị</div></div><div class="org__link"></div>
+  <div class="org__row"><div class="org__node org__node--dark">Tổ chuyên gia tư vấn (Hội Di sản Văn hóa Việt Nam)</div><div class="org__node org__node--top">Giám đốc</div></div><div class="org__link"></div>
+  <div class="org__row"><div class="org__node ">Các phó giám đốc</div></div><div class="org__link"></div>
+  <div class="org__row"><div class="org__node ">Phòng Tư vấn kiểm định</div><div class="org__node ">Phòng Hành chính kế toán</div><div class="org__node ">Phòng Kinh tế kỹ thuật</div></div><div class="org__link"></div>
+  <div class="org__row"><div class="org__node ">Chi nhánh Miền Trung</div><div class="org__node ">Chi nhánh Miền Bắc</div><div class="org__node ">Đơn vị tư vấn thiết kế, tư vấn giám sát</div><div class="org__node ">Các đơn vị thi công</div><div class="org__node ">Đơn vị kinh doanh vật liệu xây dựng</div></div></div>
+</div></section>
+<section class="section" id="kinh-nghiem"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Hồ sơ kinh nghiệm<span class="src">Nguồn: HSNL tr.16</span></p><h2>19 năm trong từng lĩnh vực</h2></header>
+  <div class="table-wrap"><table><thead><tr><th>Công việc tham gia</th><th class="num">Kinh nghiệm</th></tr></thead><tbody><tr><th colspan="2" style="position:static">Tư vấn thiết kế</th></tr><tr><td>Tu bổ, tôn tạo và phục hồi các công trình di tích lịch sử, văn hóa</td><td class="num">19 năm</td></tr><tr><td>Các công trình dân dụng và công nghiệp, cơ sở hạ tầng</td><td class="num">19 năm</td></tr><tr><th colspan="2" style="position:static">Thi công</th></tr><tr><td>Tu bổ, tôn tạo và phục hồi các công trình di tích lịch sử, văn hóa</td><td class="num">19 năm</td></tr><tr><td>Xây dựng, sửa chữa, nâng cấp các công trình dân dụng, công nghiệp, cơ sở hạ tầng</td><td class="num">19 năm</td></tr><tr><th colspan="2" style="position:static">Tư vấn giám sát</th></tr><tr><td>Tư vấn giám sát, lập dự toán thiết kế kỹ thuật thi công</td><td class="num">19 năm</td></tr><tr><td>Tư vấn giám sát thi công công trình dân dụng và di tích lịch sử văn hóa</td><td class="num">19 năm</td></tr></tbody></table></div>
+</div></section>
+<section class="section" id="nhan-su"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Năng lực cán bộ nhân viên<span class="src">Nguồn: HSNL tr.18</span></p><h2>Đội ngũ</h2></header>
+  <div class="staff"><div class=""><b>18</b><span>Kỹ sư xây dựng</span></div><div class="hl"><b>16</b><span>Kiến trúc sư</span></div><div class=""><b>02</b><span>Kỹ sư giao thông</span></div><div class=""><b>02</b><span>Kỹ sư cơ khí</span></div><div class=""><b>02</b><span>Kỹ sư cơ điện</span></div><div class=""><b>02</b><span>Kỹ sư hạ tầng kỹ thuật</span></div><div class=""><b>08</b><span>Cử nhân kinh tế tài chính</span></div><div class=""><b>80</b><span>Thợ nề</span></div><div class=""><b>60</b><span>Thợ mộc</span></div><div class=""><b>35</b><span>Thợ hàn – sắt</span></div><div class=""><b>25</b><span>Thợ điện, nước</span></div><div class="hl"><b>18</b><span>Thợ nề cổ</span></div><div class="hl"><b>05</b><span>Nghệ nhân</span></div><div class=""><b>05</b><span>Thợ máy</span></div></div><p class="note">Công nhân làm việc theo thời vụ: &gt; 300 người.</p>
+</div></section>
+<section class="section" id="thiet-bi"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Danh mục thiết bị phục vụ SXKD<span class="src">Nguồn: HSNL tr.19</span></p><h2>Máy móc, thiết bị</h2></header>
+  <div class="table-wrap"><table><thead><tr><th class="num">STT</th><th>Thiết bị</th><th>Nước sản xuất</th>
+  <th class="num">Năm SX</th><th>Thông số chính</th><th class="num">Số lượng</th></tr></thead><tbody><tr><td class="num">1</td><td>Máy đào đất</td><td>Nhật Bản</td><td class="num">2019</td><td>R140W-9S</td><td class="num">1</td></tr><tr><td class="num">2</td><td>Máy ủi</td><td>Trung Quốc</td><td class="num">2019</td><td>DH08</td><td class="num">1</td></tr><tr><td class="num">3</td><td>Máy lu</td><td>Nhật Bản</td><td class="num">2019</td><td>HV60ST</td><td class="num">1</td></tr><tr><td class="num">4</td><td>Ô tô tự đổ</td><td>Hàn Quốc</td><td class="num">2019</td><td>HD270</td><td class="num">1</td></tr><tr><td class="num">5</td><td>Ô tô tự đổ</td><td>Hàn Quốc</td><td class="num">2016</td><td>HD120</td><td class="num">1</td></tr><tr><td class="num">6</td><td>Máy kinh vĩ</td><td>Trung Quốc</td><td class="num">2023</td><td>DT 02</td><td class="num">2</td></tr><tr><td class="num">7</td><td>Máy thủy bình</td><td>Trung Quốc</td><td class="num">2022</td><td>AC-2S</td><td class="num">2</td></tr><tr><td class="num">8</td><td>Máy trộn bê tông</td><td>Việt Nam</td><td class="num">2025</td><td>3000W</td><td class="num">8</td></tr><tr><td class="num">9</td><td>Máy đầm dùi</td><td>Trung Quốc</td><td class="num">2024</td><td>2200W</td><td class="num">6</td></tr><tr><td class="num">10</td><td>Máy đầm bàn</td><td>Nhật Bản</td><td class="num">2024</td><td>2500W</td><td class="num">6</td></tr><tr><td class="num">11</td><td>Máy đầm cóc</td><td>Nhật Bản</td><td class="num">2023</td><td>5500W</td><td class="num">5</td></tr><tr><td class="num">12</td><td>Máy hàn điện</td><td>Việt Nam</td><td class="num">2022</td><td>500A</td><td class="num">6</td></tr><tr><td class="num">13</td><td>Máy bơm nước</td><td>Ý</td><td class="num">2025</td><td>750W</td><td class="num">8</td></tr><tr><td class="num">14</td><td>Máy phát điện</td><td>Trung Quốc</td><td class="num">2025</td><td>5000W</td><td class="num">4</td></tr><tr><td class="num">15</td><td>Máy cắt thép</td><td>Nhật Bản</td><td class="num">2022</td><td>3000W</td><td class="num">5</td></tr><tr><td class="num">16</td><td>Máy vận thăng</td><td>Nhật Bản</td><td class="num">2018</td><td>2T</td><td class="num">3</td></tr><tr><td class="num">17</td><td>Giàn giáo</td><td>Việt Nam</td><td class="num">2024</td><td>3000 m²</td><td class="num">1</td></tr><tr><td class="num">18</td><td>Cốp pha thép</td><td>Việt Nam</td><td class="num">2024</td><td>2000 m²</td><td class="num">1</td></tr></tbody></table></div>
+</div></section>
+<section class="section" id="tai-chinh"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Số liệu về tài chính<span class="src">Nguồn: HSNL tr.17</span></p><h2>Doanh thu 2023–2025</h2></header>
+  <div class="bars"><div class="bar"><span>2023</span><div class="bar__track"><div class="bar__fill" style="width:72.2%"></div><span class="bar__val">24.624.046.912 đ</span></div></div><div class="bar"><span>2024</span><div class="bar__track"><div class="bar__fill" style="width:100.0%"></div><span class="bar__val">34.127.405.400 đ</span></div></div><div class="bar"><span>2025</span><div class="bar__track"><div class="bar__fill" style="width:98.1%"></div><span class="bar__val">33.479.778.704 đ</span></div></div></div>
+  <p class="note">Doanh thu hoạt động xây dựng 3 năm gần nhất. Thông tin tín dụng (4 tài khoản ngân hàng) có trong PDF nhưng không đưa lên web.
+  Cần công ty quyết định có công khai doanh thu trên web hay chỉ để trong hồ sơ dự thầu.</p>
+</div></section>
+<section class="section" id="cong-trinh"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Công trình đã và đang thi công<span class="src">Nguồn: HSNL tr.20–25</span></p><h2>Các công trình tiêu biểu</h2></header>
+  <p class="lead">40 công trình từ 2008 đến 2026, trong đó 35 công trình di tích. Tổng giá trị hợp đồng 358.700.957.625 đồng.</p>
+  <div class="toolbar" role="group" aria-label="Lọc công trình">
+    <button class="chip" type="button" data-filter="all" aria-pressed="true">Tất cả</button>
+    <button class="chip" type="button" data-filter="di-tich" aria-pressed="false">Di tích</button>
+    <button class="chip" type="button" data-filter="dan-dung" aria-pressed="false">Dân dụng</button>
+    <input id="works-search" type="search" placeholder="Tìm theo tên, tỉnh, chủ đầu tư…" aria-label="Tìm công trình">
+    <output id="works-count" for="works-search"></output>
+  </div>
+  <div class="table-wrap"><table data-works><thead><tr><th class="num">STT</th><th>Tên công trình</th><th>Địa điểm thi công</th>
+  <th>Đơn vị chủ đầu tư</th><th class="num">Giá trị HĐ (đ)</th><th class="num">Thời gian</th></tr></thead><tbody><tr data-category="di-tich"><td class="num">1</td><td>Tu bổ, tôn tạo di tích chùa Keo Hành Thiện – chùa Đĩnh Lan<br><span class="tag">Di tích</span></td>
+  <td>Xuân Hồng – Xuân Trường – Nam Định</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Nam Định</td><td class="num">10.000.000.000</td><td class="num">2008–2009</td></tr><tr data-category="di-tich"><td class="num">2</td><td>Phục hồi, bảo tồn, tôn tạo khu di tích lịch sử của chính phủ.<br><span class="tag">Di tích</span></td>
+  <td>Bình Yên – Sơn Dương - Tuyên Quang</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Tuyên Quang</td><td class="num">4.300.000.000</td><td class="num">2008–2009</td></tr><tr data-category="di-tich"><td class="num">3</td><td>Tu bổ, tôn tạo di tích lịch sử thành Sơn Phòng Hàm Nghi, đền Công đồng, đền Trần Lâm<br><span class="tag">Di tích</span></td>
+  <td>Phú Gia – Hương Khê – Hà Tĩnh</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Hà Tĩnh</td><td class="num">4.659.318.000</td><td class="num">2009</td></tr><tr data-category="di-tich"><td class="num">4</td><td>Tạo cảnh quan hai bên đường lên xuống mộ Bà Hoàng Thị Loan, Lan can hai bên đường lên xuống mộ Bà Hoàng Thị Loan<br><span class="tag">Di tích</span></td>
+  <td>Kim Liên – Nam Đàn – Nghệ An</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Nghệ An</td><td class="num">2.300.000.000</td><td class="num">2009–2010</td></tr><tr data-category="di-tich"><td class="num">5</td><td>Tu bổ, chống xuống cấp thành nhà Mạc (Tuyên Quang )<br><span class="tag">Di tích</span></td>
+  <td>Thị xã Tuyên Quang – tỉnh Tuyên Quang</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Tuyên Quang</td><td class="num">2.695.416.000</td><td class="num">2009–2010</td></tr><tr data-category="di-tich"><td class="num">6</td><td>Xây dựng các hạng mục còn lại của dự án phục hồi, bảo tồn, tôn tạo di tích lịch sử cách mạng và kháng chiến (ATK) Tuyên Quang<br><span class="tag">Di tích</span></td>
+  <td>Sơn Dương – Tuyên Quang</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Tuyên Quang</td><td class="num">2.086.718.000</td><td class="num">2010</td></tr><tr data-category="di-tich"><td class="num">7</td><td>Tu bổ, tôn tạo di tích lịch sử văn hoá Chùa Sùng Nghiêm Diên Khánh<br><span class="tag">Di tích</span></td>
+  <td>Văn Lộc – Hậu Lộc – Thanh Hoá</td><td>UBND Huyện Hậu Lộc – tỉnh Thanh Hoá</td><td class="num">10.520.990.000</td><td class="num">2010–2012</td></tr><tr data-category="di-tich"><td class="num">8</td><td>Tu bổ, tôn tạo di tích chùa Keo Hành Thiện – chùa Đĩnh Lan giai đoạn II<br><span class="tag">Di tích</span></td>
+  <td>Xuân Hồng – Xuân Trường – Nam Định</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Nam Định</td><td class="num">4.446.091.000</td><td class="num">2010–2011</td></tr><tr data-category="di-tich"><td class="num">9</td><td>Tu bổ tôn tạo di tích xưởng quân giới Giang Tiên, nơi chế tạo thành công súng Bazoca<br><span class="tag">Di tích</span></td>
+  <td>Thị trấn Giang Tiên, huyện Phú Lương, tỉnh Thái Nguyên</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Thái Nguyên</td><td class="num">3.306.000.000</td><td class="num">2011–2012</td></tr><tr data-category="di-tich"><td class="num">10</td><td>Dự án nâng cấp, mở rộng khu lưu niệm Cố tổng Bí thư Nguyễn Văn Cừ<br><span class="tag">Di tích</span></td>
+  <td>Phù Khê - Từ Sơn – Bắc Ninh</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Bắc Ninh</td><td class="num">28.026.014.000</td><td class="num">2011–2012</td></tr><tr data-category="di-tich"><td class="num">11</td><td>Công trình: tu bổ, tôn tạo di tích lịch sử Văn Hóa Chùa Hộ Lệnh<br><span class="tag">Di tích</span></td>
+  <td>Xã Điền Thụy Huyện Phú Bình, Tỉnh Thái Nguyên</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Thái Nguyên</td><td class="num">1.412.397.000</td><td class="num">2012</td></tr><tr data-category="chua-ro"><td class="num">12</td><td>Công trình: Các Mạng Lào<br><span class="tag tag--unknown">Cần xác nhận</span></td>
+  <td>Phường Minh Xuân, thành phố TQ, tỉnh Tuyên Quang.</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Tuyên Quang</td><td class="num">1.310.746.000</td><td class="num">2013</td></tr><tr data-category="dan-dung"><td class="num">13</td><td>Cải tạo, sửa chữa và nâng cấp trụ sở làm việc của Đoàn nghệ thuật tỉnh Thái Nguyên<br><span class="tag tag--civil">Dân dụng</span></td>
+  <td>Phường Phan Đình Phùng, Thành phố Thái Nguyên</td><td>Đoàn nghệ thuật tỉnh Thái Nguyên</td><td class="num">3.715.206.000</td><td class="num">2014</td></tr><tr data-category="di-tich"><td class="num">14</td><td>Toàn bộ phần xây lắp công trình: Tu bổ tôn tạo nhà thờ gia tộc đại tôn họ Hoàng Xuân<br><span class="tag">Di tích</span></td>
+  <td>Xã Kim Liên, huyện Nam Đàn</td><td>Ban quản lý dự án bảo tồn, tôn tạo khu di tích Kim Liên, huyện Nam Đàn</td><td class="num">3.803.058.000</td><td class="num">2016</td></tr><tr data-category="di-tich"><td class="num">15</td><td>Tu bổ, tôn tạo di tích lịch sử văn hóa Đền Phương Giai, xã Kỳ Bắc, huyện Kỳ Anh<br><span class="tag">Di tích</span></td>
+  <td>Xã Kỳ Bắc, huyện Kỳ Anh, tỉnh Nghệ An</td><td>Ban quản lý dự án đầu tư XDCB huyện Kỳ Anh</td><td class="num">10.611.787.000</td><td class="num">2016</td></tr><tr data-category="dan-dung"><td class="num">16</td><td>Cải tạo sửa chữa trường mầm non Quan Hoa<br><span class="tag tag--civil">Dân dụng</span></td>
+  <td>Phường Quan Hoa, Cầu Giấy, Hà Nội</td><td>Ban QLDA ĐT XD Quận Cầu Giấy</td><td class="num">3.262.068.000</td><td class="num">2017</td></tr><tr data-category="di-tich"><td class="num">17</td><td>Tu bổ, tôn tạo di tích Đền Hồng Sơn, thành phố Vinh (giai đoạn 1)<br><span class="tag">Di tích</span></td>
+  <td>Thành phố Vinh, Nghệ An</td><td>Ban quản lý dự án đầu tư và xây dựng TP Vinh</td><td class="num">7.243.012.000</td><td class="num">2017</td></tr><tr data-category="di-tich"><td class="num">18</td><td>Tu sửa cấp thiết di tích Cây đa Tân Trào, xã Tân Trào, huyện Sơn Dương, Tuyên Quang<br><span class="tag">Di tích</span></td>
+  <td>Xã Tân Trào, huyện Sơn Dương, Tuyên Quang</td><td>Sở VHTT và DL Tuyên Quang</td><td class="num">270.993.000</td><td class="num">2018</td></tr><tr data-category="dan-dung"><td class="num">19</td><td>Xây lắp công trình nhà đa chức năng 2 tầng trường THCS Trung Lương<br><span class="tag tag--civil">Dân dụng</span></td>
+  <td>Phường Trung Lương, thị xã Hồng Lĩnh, tỉnh Hà Tĩnh</td><td>UBND phường Trung Lương, Hồng Lĩnh, Hà Tĩnh</td><td class="num">3.622.722.000</td><td class="num">2018</td></tr><tr data-category="di-tich"><td class="num">20</td><td>Xây dựng Bia di tích Địa điểm tổ chức Đại hội lần thứ nhất của Tổng liên đoàn Lao động Việt Nam, Đoàn thanh niên Cứu quốc Liên hiệp Phụ nữ Việt Nam (1950) xã Phú Xuyên, huyện Đại Từ<br><span class="tag">Di tích</span></td>
+  <td>Xã Phú Xuyên, huyện Đại Từ, Thái Nguyên</td><td>Sở VHTT và DL tỉnh Thái Nguyên</td><td class="num">614.212.400</td><td class="num">2019</td></tr><tr data-category="di-tich"><td class="num">21</td><td>Tu sửa cấp thiết di tích Đình Xuân La xã Xuân Phương, huyện Phú Bình, Thái Nguyên, Hạng mục: Cửa mặt trước Đại Đình<br><span class="tag">Di tích</span></td>
+  <td>Xã Xuân Phương, huyện Phú Bình, Thái Nguyên</td><td>Sở VHTT và DL tỉnh Thái Nguyên</td><td class="num">257.275.000</td><td class="num">2019</td></tr><tr data-category="dan-dung"><td class="num">22</td><td>Xây lắp công trình Nhà học đa chức năng 2 tầng 10 phòng và các hạng mục phụ trợ Trường THCS Thuận Lộc<br><span class="tag tag--civil">Dân dụng</span></td>
+  <td>Xã Thuận Lộc, thị xã Hồng Lĩnh, tỉnh Hà Tĩnh</td><td>UBND xã Thuận Lộc, Thuận Lộc, Hà Tĩnh</td><td class="num">5.951.653.730</td><td class="num">2020</td></tr><tr data-category="di-tich"><td class="num">23</td><td>Tu bổ tôn tạo Đình Đức Hậu, xã Thanh Lâm, huyện Mê Linh<br><span class="tag">Di tích</span></td>
+  <td>Thôn Đức Hậu, xã Thanh Lâm, huyện Mê Linh</td><td>UBND xã Thanh Lâm, huyện Mê Linh</td><td class="num">10.559.555.000</td><td class="num">2020</td></tr><tr data-category="di-tich"><td class="num">24</td><td>Tu bổ di tích lịch sử văn hóa Chùa Bảo Nang, xã Tân Lợi, huyện Đồng Hỷ<br><span class="tag">Di tích</span></td>
+  <td>xã Tân Lợi, huyện Đồng Hỷ, tỉnh Thái Nguyên</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Thái Nguyên</td><td class="num">1.581.849.154</td><td class="num">2021</td></tr><tr data-category="di-tich"><td class="num">25</td><td>Tu bổ, tôn tạo di tích Đình Lạc Dục, thôn Lạc Dục, xã Hưng Đạo, huyện Tứ Kỳ, tỉnh Hải Dương<br><span class="tag">Di tích</span></td>
+  <td>Thôn Lạc Dục, xã Hưng Đạo, huyện Tứ Kỳ, tỉnh Hải Dương</td><td>Tổng công ty cổ phần đầu tư phát triển xây dựng (DIC Group)</td><td class="num">11.900.000.000</td><td class="num">2021</td></tr><tr data-category="di-tich"><td class="num">26</td><td>Tu sửa cấp thiết Đền Nghè xã Hoàng Kim; Đình Soi xã Tiến Thắng; Đình Yên Mạc xã Liên Mạc<br><span class="tag">Di tích</span></td>
+  <td>Xã Hoàng Kim; Xã Tiến Thắng; xã Liên Mạc huyện Mê Linh</td><td>Phòng Văn hóa và Thông tin huyện Mê Linh</td><td class="num">2.226.195.000</td><td class="num">2022</td></tr><tr data-category="di-tich"><td class="num">27</td><td>Cải tạo và mở rộng khu lưu niệm cố Tổng Bí thư Nguyễn Văn Cừ (GĐ 2)<br><span class="tag">Di tích</span></td>
+  <td>Phù Khê, Từ Sơn, Bắc Ninh</td><td>Sở Văn hóa Thể thao và Du lịch Bắc Ninh</td><td class="num">2.571.025.000</td><td class="num">2022</td></tr><tr data-category="di-tich"><td class="num">28</td><td>Tu bổ tôn tạo Chùa Linh (Kim Giai Tự) xã Hoàng Kim, huyện Mê Linh<br><span class="tag">Di tích</span></td>
+  <td>Xã Hoàng Kim, huyện Mê Linh, Hà Nội</td><td>Ban QLDA đầu tư xây dựng huyện Mê Linh</td><td class="num">23.007.729.000</td><td class="num">2022</td></tr><tr data-category="di-tich"><td class="num">29</td><td>Tu sửa, tôn tạo di tích Chùa Bá Xuyên phường Châu Sơn, thành phố Sông Công<br><span class="tag">Di tích</span></td>
+  <td>Phường Châu Sơn, thành phố Sông Công, tỉnh Thái Nguyên</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Thái Nguyên</td><td class="num">3.487.139.558</td><td class="num">2022</td></tr><tr data-category="di-tich"><td class="num">30</td><td>Tu sửa cấp thiết di tích Đền Mẫu, xã Tam Đồng, Đình Yên Vinh, xã Thanh Lâm, huyện Mê Linh<br><span class="tag">Di tích</span></td>
+  <td>Xã Thanh Lâm – Xã Tam Đồng, huyện Mê Linh, TP Hà Nội</td><td>Phòng Văn hóa và Thông tin huyện Mê Linh</td><td class="num">1.955.022.000</td><td class="num">2022</td></tr><tr data-category="di-tich"><td class="num">31</td><td>Tu bổ di tích kiến trúc nghệ thuật quốc gia Đình Xuân La, xã Xuân Phương, huyện Phú Bình<br><span class="tag">Di tích</span></td>
+  <td>Xã Xuân Phương, huyện Phú Bình, tỉnh Thái Nguyên</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Thái Nguyên</td><td class="num">11.129.608.000</td><td class="num">2023</td></tr><tr data-category="di-tich"><td class="num">32</td><td>Tu bổ, tôn tạo Đền Đinh Nguyên, xã Tiến Thịnh, huyện Mê Linh<br><span class="tag">Di tích</span></td>
+  <td>Xã Tiến Thịnh, huyện Mê Linh, TP Hà Nội</td><td>Ban QLDA đầu tư xây dựng huyện Mê Linh</td><td class="num">24.851.700.000</td><td class="num">2023</td></tr><tr data-category="di-tich"><td class="num">33</td><td>Tu bổ, tôn tạo di tích Chùa Úc Kỳ, xã Úc Kỳ, huyện Phú Bình, tỉnh Thái Nguyên<br><span class="tag">Di tích</span></td>
+  <td>Xã Úc Kỳ, huyện Phú Bình, tỉnh Thái Nguyên</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Thái Nguyên</td><td class="num">6.691.142.861</td><td class="num">2023</td></tr><tr data-category="di-tich"><td class="num">34</td><td>Tu bổ, tôn tạo cụm di tích Chủ tịch Hồ Chí Minh ở Khuôn Tát, xã Phú Đình, huyện Định Hóa, tỉnh Thái Nguyên<br><span class="tag">Di tích</span></td>
+  <td>Xã Phú Đình, huyện Định Hóa, tỉnh Thái Nguyên</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Thái Nguyên</td><td class="num">3.325.799.000</td><td class="num">2023</td></tr><tr data-category="di-tich"><td class="num">35</td><td>Tu bổ, tôn tạo di tích chùa Hoa Sơn, xã Kim Hoa, huyện Mê Linh, thành phố Hà Nội<br><span class="tag">Di tích</span></td>
+  <td>Xã Quang Minh, thành phố Hà Nội</td><td>Ban QLDA đầu tư – Hạ tầng xã Quang Minh</td><td class="num">30.229.274.000</td><td class="num">2024–2025</td></tr><tr data-category="di-tich"><td class="num">36</td><td>Tu bổ, tôn tạo di tích Đình Yên Mạc, xã Liên Mạc, huyện Mê Linh<br><span class="tag">Di tích</span></td>
+  <td>Xã Yên Lãng, thành phố Hà Nội</td><td>Ban QLDA đầu tư – Hạ tầng xã Yên Lãng</td><td class="num">16.746.236.000</td><td class="num">2024–2025</td></tr><tr data-category="di-tich"><td class="num">37</td><td>Tu bổ tôn tạo di tích Nhà tù Chợ chu, thị trấn Chợ Chu, huyện Định Hóa, tỉnh Thái Nguyên<br><span class="tag">Di tích</span></td>
+  <td>xã Định Hóa, tỉnh Thái Nguyên</td><td>Sở Văn hoá, Thể thao và Du lịch tỉnh Thái Nguyên</td><td class="num">10.019.956.922</td><td class="num">2025</td></tr><tr data-category="di-tich"><td class="num">38</td><td>Tu bổ tôn tạo di tích Đình Lâm Hộ, xã Thanh Lâm, huyện Mê Linh<br><span class="tag">Di tích</span></td>
+  <td>Xã Quang Minh, thành phố Hà Nội</td><td>Ban QLDA đầu tư – Hạ tầng xã Quang Minh</td><td class="num">23.940.961.000</td><td class="num">2025</td></tr><tr data-category="di-tich"><td class="num">39</td><td>Tu bổ, tôn tạo di tích Chùa Linh Quang, xã Văn Khê, huyện Mê Linh<br><span class="tag">Di tích</span></td>
+  <td>Xã Mê Linh, thành phố Hà Nội</td><td>Ban QLDA đầu tư – Hạ tầng xã Mê Linh</td><td class="num">46.485.778.000</td><td class="num">2026</td></tr><tr data-category="di-tich"><td class="num">40</td><td>Tu bổ tôn tạo di tích Đền Bạch Đa và mộ tiến sỹ Đỗ Nhuận, xã Kim Hoa, huyện Mê Linh<br><span class="tag">Di tích</span></td>
+  <td>Xã Tiến Thắng, thành phố Hà Nội</td><td>Ban QLDA đầu tư – Hạ tầng xã Tiến Thắng</td><td class="num">13.576.310.000</td><td class="num">2026</td></tr></tbody></table></div>
+</div></section>
+<section class="section" id="tu-van"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Lập dự án · Tư vấn thiết kế · Tư vấn giám sát<span class="src">Nguồn: HSNL tr.25–26</span></p><h2>Công trình tư vấn</h2></header>
+  <div class="table-wrap"><table><thead><tr><th class="num">STT</th><th>Tên công trình</th><th>Địa điểm</th>
+  <th>Đơn vị chủ đầu tư</th><th class="num">Giá trị HĐ (đ)</th><th class="num">Năm</th></tr></thead><tbody><tr><td class="num">1</td><td>Lập dự án và thiết kế phục hồi di tích Đình Dương Liễu</td><td>Dương Liễu - Hoài Đức - Hà Nội</td><td>Sở Văn hoá, Thể thao và Du lịch Hà Nội</td><td class="num">188.458.000</td><td class="num">2008</td></tr><tr><td class="num">2</td><td>Tư vấn khảo sát, lập báo cáo kinh tế kỹ thuật, thiết kế bản vẽ thi công, dự toán công trình Tu bổ tôn tạo di tích lịch sử văn hóa đình Quang Húc</td><td>Đông Quang – Ba Vì – Hà Nội</td><td>BQLDA Tu bổ tôn tạo di tích lịch sử văn hóa đình Quang Húc</td><td class="num">557.360.000</td><td class="num">2009</td></tr><tr><td class="num">3</td><td>Khảo sát, lập dự án CT Tu bổ tôn tạo di tích LSVH Đình Quốc Tổ Lạc Long Quân</td><td>Thị Trấn Kim Bài - Thanh Oai - TP Hà Nội</td><td>Ban QLDA đầu tư xây dựng huyện Thanh Oai – Hà Nội</td><td class="num">933.440.000</td><td class="num">2009</td></tr><tr><td class="num">4</td><td>Tư vấn, khảo sát, lập báo cáo kinh tế kỹ thuật thi công, dự toán công trình Tu bổ, tôn tạo di tích lịch sử Đình Xá</td><td>Chúc Sơn – Chương Mỹ - Hà Nội</td><td>UBND thị trấn Chúc Sơn</td><td class="num">633.617.000</td><td class="num">2010</td></tr><tr><td class="num">5</td><td>Tư vấn thiết kế bản vẽ thi công và lập tổng dự toán công trình Tu bổ, tôn tạo di tích đình Cung Chúc, huyện Vĩnh Bảo, thành phố Hải Phòng</td><td>Vĩnh Bảo - Hải Phòng</td><td>Ban QLDA các công trình văn hóa thông tin Hải Phòng</td><td class="num">789.164.000</td><td class="num">2010</td></tr><tr><td class="num">6</td><td>Tư vấn giám sát thi công xây dựng Khu lưu niệm thuộc Quần thể lưu niệm cố Tổng Bí thư Lê Hồng Phong</td><td>Xã Hưng Thông - tỉnh Nghệ An</td><td>Ban QLDA đầu tư và Xây dựng huyện Hưng Nguyên - Nghệ An</td><td class="num">253.700.000</td><td class="num">2011</td></tr><tr><td class="num">7</td><td>Hợp đồng tư vấn thiết kế bản vẽ thi công và dự toán CT Tôn tạo di tích Đền Thờ Đức Bà và Đình Cả, tỉnh Vĩnh Phúc</td><td>Tỉnh Vĩnh Phúc</td><td>Sở Văn hoá, Thể thao và Du lịch Vĩnh Phúc</td><td class="num">371.098.000</td><td class="num">2011</td></tr><tr><td class="num">8</td><td>Tư Vấn giám sát thi công xây dựng công trình: Tu bổ, tôn tạo đền Tương Thuận</td><td>Phường Khâm Thiên - Quận Đống Đa- Hà Nội</td><td>Ban QLDA Quận Đống Đa</td><td class="num">207.914.500</td><td class="num">2011</td></tr><tr><td class="num">9</td><td>Khảo sát hiện trạng, lập quy hoạch tổng thể, báo cáo KTKT, thiết kế bản vẽ và dự toán tu bổ tôn tạo di tích Đình Trung Tự</td><td>Phường Phương Liên, Hà Nội</td><td>Ủy ban mặt trận tổ quốc phường Phương Liên</td><td class="num">90.200.000</td><td class="num">2012</td></tr><tr><td class="num">10</td><td>Thiết kế xây dựng công trình tu bổ, tôn tạo nhà thờ mẫu chua Nam Đồng</td><td>Phường Nam Đồng, Đống Đa, Hà Nội</td><td>Ban QLDA Quận Đống Đa</td><td class="num">387.401.000</td><td class="num">2013</td></tr><tr><td class="num">11</td><td>Tư vấn thiết kế xây dựng công trình tu bổ, tôn tạo di tích Đình Kim Hồ</td><td>Xã lệ chi, Huyện Gia Lâm, HN</td><td>Ban QLDA huyện Gia Lâm</td><td class="num">445.720.000</td><td class="num">2015</td></tr></tbody></table></div>
+</div></section>
+<section class="section" id="lien-he"><div class="wrap">
+  <header class="section__head"><p class="eyebrow">Liên hệ<span class="src">Nguồn: HSNL tr.1, 11</span></p><h2>Liên hệ với chúng tôi</h2></header>
+  <dl class="contact"><div><dt>Trụ sở chính</dt><dd><span>Số 33/260 đường Cầu Giấy, P. Quan Hoa, Q. Cầu Giấy, Hà Nội</span></dd></div><div><dt>Văn phòng giao dịch</dt><dd><span>P.201, Tòa nhà CT2A, KĐTM Cổ Nhuế, Bắc Từ Liêm, Hà Nội</span></dd></div><div><dt>Điện thoại</dt><dd><span>024 6674 1374</span><button class="copy" type="button" data-copy="024 6674 1374">Chép</button></dd></div><div><dt>Giám đốc</dt><dd><span>Bà Lê Thị Lường — Giám đốc · 0985 028 575</span></dd></div><div><dt>Email</dt><dd><span>ditichvanhoa@gmail.com</span><button class="copy" type="button" data-copy="ditichvanhoa@gmail.com">Chép</button></dd></div></dl>
+</div></section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <svg viewBox="0 0 400 200" role="img" aria-label="Logo CST.,JSC">
+  <path d="M200 4 L396 100 L200 196 L4 100 Z" fill="#952E27"/>
+  <g fill="none" stroke="#F5EEDF">
+    <path d="M200 14 L376 100 L200 186 L24 100 Z" stroke-width="2.5"/>
+    <path d="M200 28 L112 64 L288 64 Z" stroke-width="3"/>
+    <path d="M200 38 L140 60 L260 60 Z" stroke-width="1.5"/>
+    <rect x="186" y="134" width="28" height="26" stroke-width="3"/>
+  </g>
+  <g fill="#F5EEDF">
+    <rect x="100" y="66" width="200" height="7"/>
+    <text x="200" y="113" text-anchor="middle" font-family="Oswald, 'Arial Narrow', sans-serif" font-weight="600" font-size="38">CST.,JSC</text>
+    <rect x="118" y="120" width="164" height="6"/>
+  </g>
+</svg>
+    <div><b>Công ty Cổ phần Xây dựng Công trình Văn hóa Thể thao và Du lịch</b><br>Số 33/260 đường Cầu Giấy, P. Quan Hoa, Q. Cầu Giấy, Hà Nội<br>Điện thoại 024 6674 1374 · ditichvanhoa@gmail.com</div>
+  </div>
+</footer>
+
+<script type="module">// Hành trình 3D: logo CST.,JSC mở đầu, rồi lùi về làm phông nền trống đồng.
+// Các công trình tiêu biểu nằm trên một bánh xe đứng, cuộn xuống thì lăn từ trên xuống.
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const COLORS = {
+  then: 0x1a1210,
+  son: 0x952e27,
+  thep: 0xc49a4a,
+};
+const WHEEL_STEP = Math.PI / 3; // 60° giữa hai công trình
+const WHEEL_RADIUS = 5.2;
+const CARD_WIDTH = 5.4;
+const CARD_HEIGHT = 3.9;
+const SMOOTHING = 0.08;
+const MAX_PIXEL_RATIO = 2;
+
+const stage = document.querySelector('[data-journey-stage]');
+const section = document.querySelector('[data-journey]');
+const chapterData = JSON.parse(document.getElementById('featured-data').textContent);
+
+const canUse3d = () => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+  const probe = document.createElement('canvas');
+  return Boolean(probe.getContext('webgl2') || probe.getContext('webgl'));
+};
+
+/* ---------- Vẽ logo lên canvas (bản vẽ lại tạm, chờ file vector gốc) ---------- */
+function drawLogo(ctx, { fill, stroke, scale }) {
+  ctx.save();
+  ctx.scale(scale, scale);
+  const diamond = (inset) => {
+    ctx.beginPath();
+    ctx.moveTo(200, 4 + inset);
+    ctx.lineTo(396 - inset * 2, 100);
+    ctx.lineTo(200, 196 - inset);
+    ctx.lineTo(4 + inset * 2, 100);
+    ctx.closePath();
+  };
+  if (fill) { diamond(0); ctx.fillStyle = fill; ctx.fill(); }
+  ctx.strokeStyle = stroke;
+  ctx.fillStyle = stroke;
+  ctx.lineJoin = 'miter';
+  ctx.lineWidth = 2.5; diamond(10); ctx.stroke();
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(200, 28); ctx.lineTo(112, 64); ctx.lineTo(288, 64); ctx.closePath(); ctx.stroke();
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(200, 38); ctx.lineTo(140, 60); ctx.lineTo(260, 60); ctx.closePath(); ctx.stroke();
+  ctx.fillRect(100, 66, 200, 7);
+  ctx.font = '600 38px Oswald, "Arial Narrow", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('CST.,JSC', 200, 113);
+  ctx.fillRect(118, 120, 164, 6);
+  ctx.lineWidth = 3; ctx.strokeRect(186, 134, 28, 26);
+  ctx.restore();
+}
+
+function logoTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 2048; canvas.height = 1024;
+  drawLogo(canvas.getContext('2d'), { fill: '#952E27', stroke: '#F5EEDF', scale: 5.12 });
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
+}
+
+/* ---------- Dựng cảnh ---------- */
+function buildLogo() {
+  const halfW = 3.2, halfH = 1.6;
+  const shape = new THREE.Shape();
+  shape.moveTo(0, halfH); shape.lineTo(halfW, 0); shape.lineTo(0, -halfH); shape.lineTo(-halfW, 0); shape.closePath();
+  const depth = 0.35;
+  const body = new THREE.Mesh(
+    new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelSize: 0.06, bevelThickness: 0.06, bevelSegments: 2 }),
+    [
+      new THREE.MeshStandardMaterial({ color: COLORS.son, roughness: 0.35, metalness: 0.1 }),
+      new THREE.MeshStandardMaterial({ color: COLORS.thep, roughness: 0.28, metalness: 1 }),
+    ],
+  );
+  body.position.z = -depth / 2;
+  const face = new THREE.Mesh(
+    new THREE.PlaneGeometry(halfW * 2, halfH * 2),
+    new THREE.MeshStandardMaterial({ map: logoTexture(), transparent: true, roughness: 0.32, metalness: 0.05 }),
+  );
+  face.position.z = depth / 2 + 0.07;
+  const group = new THREE.Group();
+  group.add(body, face);
+  return group;
+}
+
+/* Bánh xe ảnh: mỗi công trình là một tấm ảnh khung vàng gắn trên vòng tròn đứng (quay quanh trục X).
+   Cuộn xuống thì bánh xe quay, công trình kế tiếp lăn từ trên xuống vào chính giữa. */
+function buildWheel(loader, renderer, chapters) {
+  const wheel = new THREE.Group();
+  const frameMat = new THREE.MeshStandardMaterial({ color: COLORS.thep, roughness: 0.3, metalness: 1 });
+  const cards = chapters.map((chapter, i) => {
+    const [file] = chapter.images[0];
+    const angle = i * WHEEL_STEP;
+    const holder = new THREE.Group();
+    holder.position.set(0, Math.sin(angle) * WHEEL_RADIUS, Math.cos(angle) * WHEEL_RADIUS);
+    holder.rotation.x = -angle;
+    // Ảnh không chịu ánh sáng, sương hay tone mapping: hiện đúng màu gốc, rõ nét.
+    const photoMat = new THREE.MeshBasicMaterial({ color: 0x2b1d19, toneMapped: false, fog: false });
+    const photo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), photoMat);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.1), frameMat);
+    frame.position.z = -0.07;
+    const fit = (aspect) => {
+      const w = Math.min(CARD_WIDTH, CARD_HEIGHT * aspect);
+      const h = w / aspect;
+      photo.scale.set(w, h, 1);
+      frame.scale.set(w + 0.2, h + 0.2, 1);
+    };
+    fit(4 / 3);
+    loader.load(`img/${file}.jpg`, (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      photoMat.map = texture;
+      photoMat.needsUpdate = true;
+      fit(texture.image.width / texture.image.height);
+    });
+    holder.add(frame, photo);
+    wheel.add(holder);
+    return { angle, holder, photoMat };
+  });
+  return { wheel, cards };
+}
+
+/* ---------- Chạy ---------- */
+function start() {
+  // Hiện khung 3D trước để đo được kích thước canvas.
+  document.documentElement.classList.add('has-3d');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  stage.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(COLORS.then);
+  scene.fog = new THREE.Fog(COLORS.then, 9, 24);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  scene.add(new THREE.HemisphereLight(0xffe2b8, 0x1a1210, 0.6));
+  const key = new THREE.DirectionalLight(0xffd9a0, 1.4);
+  key.position.set(-6, 8, 8);
+  scene.add(key);
+  const sweep = new THREE.PointLight(0xffd27a, 30, 14, 2);
+  scene.add(sweep);
+
+  // Mặt trống đồng lớn phía sau, kim loại bắt ánh vàng quét qua.
+  const drum = new THREE.Mesh(
+    new THREE.CircleGeometry(12, 96),
+    new THREE.MeshStandardMaterial({ color: 0x9a8668, metalness: 0.7, roughness: 0.5, fog: false }),
+  );
+  drum.position.z = -14;
+  // Ảnh mặt trống từ tools/make_drum_texture.py (theo ảnh mẫu trống Ngọc Lũ).
+  new THREE.TextureLoader().load('img/trong-dong.jpg', (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    drum.material.map = texture;
+    drum.material.needsUpdate = true;
+  });
+  scene.add(drum);
+
+  const { wheel, cards } = buildWheel(new THREE.TextureLoader(), renderer, chapterData);
+  // Giá đỡ: xoay nhẹ bánh xe về phía người xem khi nó lệch sang phải.
+  const mount = new THREE.Group();
+  mount.add(wheel);
+  scene.add(mount);
+  const logo = buildLogo();
+  scene.add(logo);
+
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 80);
+  const logoBase = new THREE.Vector3();
+  let logoScale = 1;
+  const wheelBase = new THREE.Vector3();
+  const resize = () => {
+    const { clientWidth: w, clientHeight: h } = stage;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    const narrow = camera.aspect < 0.9;
+    camera.fov = narrow ? 64 : 50;
+    // Màn rộng: logo và bánh xe ở bên phải, chữ bên trái. Điện thoại: ở phía trên, chữ bên dưới.
+    logoBase.set(narrow ? 0 : 3.6, narrow ? 3.1 : 0.4, 0);
+    logoScale = narrow ? 0.62 : 1;
+    wheelBase.set(narrow ? 0 : 3.4, narrow ? 3.3 : 0.3, 0);
+    mount.scale.setScalar(narrow ? 0.56 : 1);
+    mount.rotation.y = narrow ? 0 : -0.24;
+    drum.position.x = narrow ? 0 : 4.2;
+    drum.position.y = narrow ? 2.2 : 0.3;
+    camera.updateProjectionMatrix();
+  };
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Tiến trình: 0 = logo, 1..N = công trình thứ N ở chính giữa.
+  const lastStop = chapterData.length;
+  const ease = (t) => t * t * (3 - 2 * t);
+  const scrollTarget = () => {
+    const rect = section.getBoundingClientRect();
+    const travel = rect.height - window.innerHeight;
+    return THREE.MathUtils.clamp(-rect.top / travel, 0, 1) * lastStop;
+  };
+
+  const pointer = new THREE.Vector2();
+  window.addEventListener('pointermove', (e) => {
+    pointer.set(e.clientX / window.innerWidth - 0.5, e.clientY / window.innerHeight - 0.5);
+  });
+
+  let progress = scrollTarget();
+  let visible = true;
+  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(section);
+
+  const clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    if (!visible) return;
+    const t = clock.getElapsedTime();
+    progress += (scrollTarget() - progress) * SMOOTHING;
+    const gate = ease(THREE.MathUtils.clamp(progress, 0, 1));
+
+    camera.position.set(pointer.x * 0.6, 0.4 - pointer.y * 0.35, 10);
+    camera.lookAt(0, 0.3, 0);
+
+    // Logo: đung đưa nhẹ, rồi thu nhỏ, chìm vào logo trên phông trống đồng khi bắt đầu cuộn.
+    logo.rotation.y = Math.sin(t * 0.5) * 0.22 * (1 - gate);
+    logo.position.set(logoBase.x * (1 - gate), logoBase.y * (1 - gate), -gate * 4);
+    logo.scale.setScalar(logoScale * (1 - gate));
+    logo.visible = gate < 0.98;
+    sweep.position.set(Math.sin(t * 0.7) * 5, 1.4, 2.6);
+    sweep.intensity = 30 * (1 - gate);
+    drum.rotation.z = t * 0.02;
+
+    // Bánh xe: rơi từ trên vào, rồi quay để công trình hiện tại nằm ở chính giữa.
+    const turn = (Math.max(progress, 1) - 1) * WHEEL_STEP;
+    wheel.rotation.x = turn;
+    mount.position.set(wheelBase.x, wheelBase.y + (1 - gate) * 9, wheelBase.z);
+    wheel.position.z = -WHEEL_RADIUS;
+    cards.forEach(({ angle, holder, photoMat }, i) => {
+      const facing = Math.cos(angle - turn); // 1 = đang ở chính giữa, âm = nửa sau bánh xe
+      // Lúc bánh xe còn đang rơi vào, chỉ hiện công trình đầu tiên để màn mở đầu gọn.
+      holder.visible = facing > -0.1 && (i === 0 || gate > 0.6);
+      const lit = THREE.MathUtils.clamp(0.35 + 0.65 * facing, 0.3, 1);
+      if (photoMat.map) photoMat.color.setScalar(lit);
+    });
+
+    renderer.render(scene, camera);
+  });
+}
+
+if (stage && section && canUse3d()) {
+  document.fonts.load('600 38px Oswald').finally(() => {
+    try { start(); } catch (error) {
+      document.documentElement.classList.remove('has-3d');
+      console.error('3D không khởi tạo được, dùng bản tĩnh.', error); }
+  });
+}
+</script>
+<script>// Bộ lọc danh sách công trình + nút sao chép liên hệ. Không phụ thuộc thư viện.
+const table = document.querySelector('[data-works]');
+if (table) {
+  const rows = [...table.tBodies[0].rows];
+  const chips = [...document.querySelectorAll('[data-filter]')];
+  const search = document.getElementById('works-search');
+  const count = document.getElementById('works-count');
+  let category = 'all';
+
+  const normalize = (text) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase();
+  const apply = () => {
+    const query = normalize(search.value.trim());
+    let shown = 0;
+    rows.forEach((row) => {
+      const match = (category === 'all' || row.dataset.category === category) && normalize(row.textContent).includes(query);
+      row.hidden = !match;
+      if (match) shown += 1;
+    });
+    count.value = `${shown} / ${rows.length} công trình`;
+  };
+
+  chips.forEach((chip) => chip.addEventListener('click', () => {
+    category = chip.dataset.filter;
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+    apply();
+  }));
+  search.addEventListener('input', apply);
+  apply();
+}
+
+document.querySelectorAll('[data-copy]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const text = button.dataset.copy;
+    navigator.clipboard.writeText(text)
+      .then(() => { button.textContent = 'Đã chép'; })
+      .catch(() => {
+        const range = document.createRange();
+        range.selectNodeContents(button.previousElementSibling);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        button.textContent = 'Đã chọn — nhấn Ctrl+C';
+      });
+  });
+});
+</script>
+</body></html>

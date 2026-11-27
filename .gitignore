@@ -1,0 +1,14 @@
+# Dữ liệu admin trên máy (mật khẩu đã băm, bản lưu) — không đưa lên GitHub
+admin/data/
+# Biến môi trường thật (mật khẩu, tên miền)
+.env
+# Tệp tạm, ảnh kiểm tra giao diện, nhật ký công cụ
+.claude/ui-check/
+.claude/settings.local.json
+sentry/
+__pycache__/
+*.pyc
+*.tmp
+*.seed-tmp
+Thumbs.db
+desktop.ini

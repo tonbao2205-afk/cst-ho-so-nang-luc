@@ -1,0 +1,12 @@
+# Script chạy trong container Linux: luôn xuống dòng kiểu LF
+*.sh text eol=lf
+Dockerfile text eol=lf
+Caddyfile text eol=lf
+*.yml text eol=lf
+# Tệp nhị phân
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.pdf binary
+*.zip binary

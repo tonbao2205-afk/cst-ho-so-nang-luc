@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Quản trị CST.,JSC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Playfair+Display:wght@600&display=swap">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- Điện thoại: không phục vụ -->
+  <main class="auth desktop-only" id="mobile-block">
+    <div class="auth__card">
+      <p class="auth__brand">CST.,JSC</p>
+      <h1>Chỉ dùng trên máy tính</h1>
+      <p class="auth__hint">Trang quản trị không hỗ trợ điện thoại. Vui lòng mở trên máy tính để sửa nội dung trang.</p>
+      <a class="auth__back" href="/">← Về trang chính</a>
+    </div>
+  </main>
+
+  <!-- Đăng nhập / tạo mật khẩu lần đầu -->
+  <main class="auth" id="auth" hidden>
+    <form class="auth__card" id="auth-form" autocomplete="on">
+      <p class="auth__brand">CST.,JSC</p>
+      <h1 id="auth-title">Đăng nhập quản trị</h1>
+      <p class="auth__hint" id="auth-hint">Nhập tài khoản và mật khẩu để sửa nội dung trang.</p>
+      <label>Tài khoản
+        <input type="text" id="auth-user" autocomplete="username" required autocapitalize="off" spellcheck="false">
+      </label>
+      <label>Mật khẩu
+        <input type="password" id="auth-pw" autocomplete="current-password" required minlength="1">
+      </label>
+      <label id="auth-pw2-wrap" hidden>Nhập lại mật khẩu
+        <input type="password" id="auth-pw2" autocomplete="new-password">
+      </label>
+      <p class="auth__error" id="auth-error" role="alert"></p>
+      <button class="btn btn--primary" type="submit" id="auth-submit">Đăng nhập</button>
+      <a class="auth__back" href="/">← Về trang chính</a>
+    </form>
+  </main>
+
+  <!-- Trình sửa -->
+  <div class="app" id="app" hidden>
+    <header class="bar">
+      <div class="bar__brand"><b>CST.,JSC</b><span>Quản trị nội dung</span></div>
+      <div class="bar__device" role="group" aria-label="Khổ xem">
+        <button type="button" class="seg is-on" data-device="desktop" title="Xem như máy tính">Máy tính</button>
+        <button type="button" class="seg" data-device="phone" title="Xem như điện thoại">Điện thoại</button>
+      </div>
+      <div class="bar__actions">
+        <span class="status" id="status">Đang tải…</span>
+        <button type="button" class="btn" id="btn-undo" title="Hoàn tác (Ctrl+Z)" disabled>↶<span class="undo-label"> Hoàn tác</span></button>
+        <button type="button" class="btn" id="btn-redo" title="Làm lại (Ctrl+Y)" disabled>↷</button>
+        <a class="btn" href="/" target="_blank" rel="noopener" title="Mở trang thật ở tab mới">Xem trang</a>
+        <button type="button" class="btn btn--primary" id="btn-save" title="Lưu (Ctrl+S)" disabled>Lưu thay đổi</button>
+      </div>
+    </header>
+
+    <div class="work">
+      <div class="canvas" id="canvas">
+        <iframe id="frame" title="Trang đang sửa"></iframe>
+      </div>
+
+      <aside class="side" id="side">
+        <nav class="tabs" role="tablist">
+          <button type="button" role="tab" class="tab is-on" data-tab="edit">Đang chọn</button>
+          <button type="button" role="tab" class="tab" data-tab="page">Trang</button>
+          <button type="button" role="tab" class="tab" data-tab="files">Tệp &amp; ảnh</button>
+          <button type="button" role="tab" class="tab" data-tab="history">Bản lưu</button>
+          <button type="button" role="tab" class="tab" data-tab="account">Tài khoản</button>
+        </nav>
+
+        <section class="panel is-on" data-panel="edit" id="panel-edit"></section>
+
+        <section class="panel" data-panel="page">
+          <h2>Thông tin trang</h2>
+          <label class="field">Tiêu đề (hiện trên tab trình duyệt)
+            <input type="text" id="page-title">
+          </label>
+          <label class="field">Mô tả ngắn (Google, Zalo, Facebook hiển thị)
+            <textarea id="page-desc" rows="3"></textarea>
+          </label>
+          <h2>Đi tới mục</h2>
+          <ul class="toc" id="toc"></ul>
+          <div class="help">
+            <h2>Cách sửa</h2>
+            <ul>
+              <li><b>Sửa chữ:</b> bấm vào chữ trên trang rồi gõ.</li>
+              <li><b>Thay ảnh, thay tệp PDF:</b> bấm vào ảnh hoặc nút, rồi dùng khung bên phải.</li>
+              <li><b>Thêm mới:</b> bấm vào một mục (dòng, thẻ, công trình…) rồi chọn <i>Thêm mục giống thế này</i>, sau đó sửa nội dung mục mới.</li>
+              <li><b>Xóa, đổi thứ tự:</b> dùng nút Xóa, ↑, ↓ ở khung bên phải.</li>
+              <li>Xong bấm <b>Lưu thay đổi</b>. Mỗi lần lưu, bản cũ được giữ lại trong <i>Bản lưu</i>.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel" data-panel="files">
+          <h2>Tải tệp lên</h2>
+          <div class="upload">
+            <label class="field field--inline">Loại
+              <select id="up-folder">
+                <option value="img/uploads">Ảnh</option>
+                <option value="giay-to">Giấy tờ (PDF…)</option>
+                <option value="img/giay-to">Ảnh chụp giấy tờ</option>
+              </select>
+            </label>
+            <label class="btn btn--primary btn--file">Chọn tệp…<input type="file" id="up-input" multiple hidden></label>
+          </div>
+          <p class="note" id="files-note">Bấm vào một tệp để gắn vào phần đang chọn trên trang (ảnh → thay ảnh, tệp → gắn vào nút/liên kết).</p>
+          <input type="search" class="filter" id="files-filter" placeholder="Lọc theo tên tệp…">
+          <div class="files" id="files"></div>
+        </section>
+
+        <section class="panel" data-panel="history">
+          <h2>Bản lưu trước đây</h2>
+          <p class="note">Mỗi lần bấm Lưu, trang cũ được cất lại ở đây (giữ 60 bản gần nhất). Khôi phục một bản sẽ thay toàn bộ trang hiện tại bằng bản đó (bản hiện tại cũng được cất lại trước).</p>
+          <ul class="backups" id="backups"></ul>
+        </section>
+
+        <section class="panel" data-panel="account">
+          <p class="note" id="who"></p>
+          <h2>Đổi mật khẩu</h2>
+          <form id="pw-form" class="stack">
+            <label class="field">Mật khẩu hiện tại<input type="password" id="pw-cur" autocomplete="current-password" required></label>
+            <label class="field">Mật khẩu mới<input type="password" id="pw-new" autocomplete="new-password" required></label>
+            <label class="field">Nhập lại mật khẩu mới<input type="password" id="pw-new2" autocomplete="new-password" required></label>
+            <button class="btn btn--primary" type="submit">Đổi mật khẩu</button>
+          </form>
+          <h2>Phiên làm việc</h2>
+          <button class="btn" type="button" id="btn-logout">Đăng xuất</button>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <input type="file" id="pick-file" hidden>
+
+  <script src="admin.js"></script>
+</body>
+</html>
