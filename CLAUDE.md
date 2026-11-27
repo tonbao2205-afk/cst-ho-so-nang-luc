@@ -19,5 +19,6 @@
 ## Docker / CI (chi tiết: `DEPLOY.md`)
 - `Dockerfile` + `docker/entrypoint.sh` + `docker/seed.py`: container chạy `server.py --lan --root /data/site --data /data/admin`; khi khởi động seed.py chép trang từ image sang volume (mã admin luôn đè; nội dung admin đã sửa thì giữ, `index.html` mới cất vào Bản lưu). Thêm thư mục nội dung mới thì cập nhật `CONTENT_DIRS` trong seed.py + `COPY` trong Dockerfile.
 - Biến môi trường server: `CST_ADMIN_USER`/`CST_ADMIN_PASSWORD` (tạo tài khoản lần đầu), `CST_COOKIE_SECURE=1` (sau HTTPS).
+- Web tĩnh: job `pages` trong ci.yml đăng `index.html` + `img/` + `giay-to/` lên https://tonbao2205-afk.github.io/cst-ho-so-nang-luc/ mỗi lần push `main` (không có admin; đường dẫn trong trang phải tương đối).
 - `docker-compose.yml` (app + Caddy HTTPS), `docker-compose.local.yml` (chạy thử cổng 8080). CI: `.github/workflows/ci.yml` (test → build/chạy thử image → đẩy ghcr.io; job deploy tắt tới khi đặt biến `DEPLOY_ENABLED=true`).
 - Sửa `server.py` / `seed.py` thì chạy `python tests/smoke_test.py` (phải "KẾT QUẢ: OK").

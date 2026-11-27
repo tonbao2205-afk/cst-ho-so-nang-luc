@@ -1,6 +1,7 @@
 # CI/CD trang CST.,JSC
 #  - Mọi push / pull request: kiểm tra mã + kiểm thử máy chủ admin + build image Docker và chạy thử container.
 #  - Push lên nhánh main (hoặc tag v*): đẩy image lên GitHub Container Registry (ghcr.io/<owner>/<repo>).
+#  - Push lên main: đăng trang tĩnh lên GitHub Pages (https://<owner>.github.io/<repo>/) — không có admin.
 #  - Deploy lên máy chủ: TẮT sẵn. Bật khi có máy chủ — xem DEPLOY.md (biến DEPLOY_ENABLED + các secret SSH).
 name: CI
 
@@ -71,6 +72,42 @@ jobs:
 
       - name: Kiểm thử máy chủ admin + chép trang
         run: python tests/smoke_test.py
+
+  pages:
+    name: Đăng web tĩnh lên GitHub Pages
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gom trang tĩnh (không có admin, không mã máy chủ)
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r img giay-to _site/
+          touch _site/.nojekyll
+          du -sh _site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Đăng lên GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
 
   docker:
     name: Build + chạy thử image Docker

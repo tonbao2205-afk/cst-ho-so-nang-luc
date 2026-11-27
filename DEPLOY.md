@@ -11,6 +11,13 @@
 | `.github/workflows/ci.yml` | CI: kiểm tra mã → kiểm thử → build + chạy thử image → đẩy image lên `ghcr.io` → (deploy, đang tắt). |
 | `tests/smoke_test.py` | Kiểm thử máy chủ admin + chép trang (`python tests/smoke_test.py`). |
 
+## Web tĩnh trên GitHub Pages
+
+Mỗi lần push lên `main`, sau khi kiểm thử đạt, CI đăng trang lên **https://tonbao2205-afk.github.io/cst-ho-so-nang-luc/**.
+
+- Trang đăng lên gồm `index.html`, `img/` và `giay-to/`.
+- Trang tĩnh **không có admin**. Muốn sửa nội dung thì sửa bằng admin trên máy, rồi commit và push để đăng lại.
+
 ## Dữ liệu nằm ở đâu (quan trọng)
 
 Trên máy chủ, admin sửa trang ngay trong ổ dữ liệu `cst-data` (`/data`):

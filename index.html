@@ -2544,6 +2544,7 @@
     width: 50%;
     height: 100%;
     overflow: hidden;
+    will-change: transform, opacity; /* dựng lớp sẵn trong lúc tải → cửa trống mở ra không khựng */
     transition: transform 1.3s cubic-bezier(.7, 0, .2, 1) .15s, opacity .5s ease 1.1s;
   }
 
@@ -4396,7 +4397,6 @@
   const WHEEL_RADIUS = 5.2;
   const CARD_WIDTH = 5.4;
   const CARD_HEIGHT = 3.9;
-  const PHONE_LIGHT = matchMedia('(max-width: 760px)'); // điện thoại: nghỉ vẽ 3D khi màn trống đồng đang mở ra
   const SMOOTHING = 7; // tốc độ cảnh 3D đuổi theo vị trí cuộn (1/giây)
   const MAX_PIXEL_RATIO = 2;
 
@@ -5378,7 +5378,6 @@
       lastFrame = now;
       // Bảng ảnh đang mở che kín màn hình: nghỉ vẽ hành trình cho nhẹ máy.
       if (!visible || document.documentElement.classList.contains('gallery-open')) return;
-      if (window.cstReady && PHONE_LIGHT.matches && document.documentElement.classList.contains('opening-on')) return;
       const t = clock.getElapsedTime();
       // Bám theo vị trí cuộn theo thời gian thực (không phụ thuộc số khung hình/giây của máy).
       const target = scrollTarget();
