@@ -75,6 +75,11 @@
     box-sizing: border-box;
   }
 
+  /* Dừng đà cuộn của ngón tay trong lúc trang tự trượt (xem setupStepper). Cuộn bằng script vẫn chạy. */
+  html.scroll-lock {
+    overflow: hidden;
+  }
+
   html {
     scroll-behavior: smooth;
     /* Ẩn thanh cuộn của trình duyệt (nó chiếm chỗ → hiện/ẩn làm cả trang khựng); dùng thanh cuộn riêng nổi bên phải. */
@@ -4528,7 +4533,8 @@
   const CARD_WIDTH = 5.4;
   const CARD_HEIGHT = 3.9;
   const SMOOTHING = 7; // tốc độ cảnh 3D đuổi theo vị trí cuộn (1/giây)
-  const MAX_PIXEL_RATIO = 2;
+  // Điện thoại: cảnh 3D phủ cả màn hình, vẽ ở 1,5x (thay vì 2x) đỡ gần một nửa số điểm ảnh → chuyển cảnh mượt hơn.
+  const MAX_PIXEL_RATIO = window.matchMedia('(max-width: 760px)').matches ? 1.5 : 2;
 
   const stage = document.querySelector('[data-journey-stage]');
   const section = document.querySelector('[data-journey]');
@@ -4734,6 +4740,7 @@
         window.scrollTo({ top: from + (tops[index] - from) * easeInOut(k), behavior: 'instant' });
         if (k < 1) { frame = requestAnimationFrame(tick); return; }
         animating = false;
+        if (!touching) root.classList.remove('scroll-lock'); // ngón tay còn đặt trên màn hình: mở khóa lúc nhấc tay
         snapTo(index);
         // Thanh địa chỉ còn đang co giãn sau khi dừng: canh lại thêm vài lần.
         fixTimers = [150, 400, 800].map((ms) => setTimeout(() => snapTo(index), ms));
@@ -4795,18 +4802,22 @@
     let touchTarget = null;
     // touchmove không passive chặn cuộn của trình duyệt chờ script: chỉ gắn khi đang ở hành trình, sang phần hồ sơ
     // thì gỡ ra để trình duyệt tự cuộn mượt (không chờ luồng chính).
+    // Ngay đầu phần hồ sơ (lệch mép "Giới thiệu chung" vài chục px) vuốt lên cũng là một lần vuốt: chạy trọn trống đồng
+    // về công trình cuối, không kéo dần từng chút.
+    const EDGE_PX = 40;
+    const ownsTouch = (dir) => owns(dir) || (dir < 0 && !blocked() && window.scrollY <= tops[last] + EDGE_PX);
     const onTouchMove = (e) => {
       if (touchMode === 'native') return;
       touchDy = touchY - e.touches[0].clientY;
       if (!touchMode && Math.abs(touchDy) > 6) {
         const dir = Math.sign(touchDy);
-        touchMode = owns(dir) && !innerScroller(touchTarget, dir) ? 'step' : 'native';
+        touchMode = ownsTouch(dir) && !innerScroller(touchTarget, dir) ? 'step' : 'native';
       }
       if (touchMode === 'step' && e.cancelable) e.preventDefault();
     };
     let touchOn = false;
     const syncTouch = () => {
-      const want = window.scrollY <= tops[last] + 2;
+      const want = window.scrollY <= tops[last] + EDGE_PX;
       if (want === touchOn) return;
       touchOn = want;
       if (want) window.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -4819,11 +4830,23 @@
       touchTarget = e.target;
       touchMode = e.touches.length > 1 || !touchOn ? 'native' : null;
     }, { passive: true });
-    window.addEventListener('touchend', () => {
+    // Lần vuốt (không phải chạm) gần nhất: đà cuộn sau đó còn chạy vài giây. Chạm logo / mục menu thì không tính,
+    // để cuộn mượt tới mục (vd. "#hanh-trinh") đi thẳng qua đoạn trống đồng.
+    let lastSwipeEnd = 0;
+    const touchDone = (e) => {
       touching = false;
+      const end = e.changedTouches && e.changedTouches[0];
+      if (end && Math.abs(end.clientY - touchY) > 10) lastSwipeEnd = performance.now();
+      if (!animating) root.classList.remove('scroll-lock');
+    };
+    window.addEventListener('touchend', (e) => {
+      touchDone(e);
       if (touchMode === 'step' && !animating && Math.abs(touchDy) > SWIPE_MIN_PX) go(nextIndex(Math.sign(touchDy)));
       touchMode = null;
     }, { passive: true });
+    window.addEventListener('touchcancel', (e) => { touchDone(e); touchMode = null; }, { passive: true });
+    // Có click thì cú chạm vừa rồi là bấm, không phải vuốt (chạm hơi trượt tay vẫn ra click).
+    document.addEventListener('click', () => { lastSwipeEnd = 0; }, true);
 
     // Bàn phím.
     window.addEventListener('keydown', (e) => {
@@ -4840,9 +4863,21 @@
     // Kéo thanh cuộn hoặc tải lại giữa chừng: dừng tay thì tự canh về công trình gần nhất.
     let settleTimer = 0;
     let navigating = false; // đang cuộn tới một mục qua menu: không tự canh về công trình giữa đường
+    let lastY = window.scrollY;
     window.addEventListener('scroll', () => {
       clearTimeout(settleTimer);
+      const y = window.scrollY;
+      const up = y < lastY;
+      lastY = y;
       if (animating) return;
+      // Vuốt lướt trong phần hồ sơ, đà cuộn trôi qua mép "Giới thiệu chung" vào đoạn trống đồng: không cho trống lăn dần
+      // theo tay. Khóa cuộn (dừng đà), trượt về đúng mép; lần vuốt sau mới chạy trọn trống đồng về hành trình.
+      const viaTouch = touching || performance.now() - lastSwipeEnd < 2500;
+      if (viaTouch && up && !navigating && !blocked() && y < tops[last] - 1 && y > tops[last - 1] + 2) {
+        root.classList.add('scroll-lock');
+        go(last, 320);
+        return;
+      }
       settleTimer = setTimeout(() => {
         if (animating || touching || navigating || root.classList.contains('opening-on')) return;
         const y = window.scrollY;
@@ -4891,6 +4926,7 @@
       e.preventDefault();
       cancelAnimationFrame(frame);
       animating = false;
+      root.classList.remove('scroll-lock');
       navigating = true;
       root.classList.remove('profile-wait');
       if (location.hash !== link.getAttribute('href')) history.pushState(null, '', link.getAttribute('href'));
