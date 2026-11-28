@@ -985,6 +985,20 @@
     animation: pop-in .35s cubic-bezier(.2, .7, .2, 1);
   }
 
+  /* Điện thoại: bỏ làm mờ nền (backdrop-filter) ở thanh đầu trang và khung chữ, nền đậm hơn chút bù lại.
+     Làm mờ phải tính lại mỗi khung hình khi trang cuộn / cảnh 3D chạy phía sau → máy yếu cuộn giật. */
+  @media (max-width: 760px) {
+    .site-header {
+      backdrop-filter: none;
+      background: #1a1210;
+    }
+
+    .chapter {
+      backdrop-filter: none;
+      background: rgba(26, 18, 16, 0.9);
+    }
+  }
+
   .gallery-pop::backdrop {
     background: rgba(12, 8, 7, .82);
     backdrop-filter: blur(4px);
@@ -4779,14 +4793,9 @@
     let touchMode = null;
     let touching = false;
     let touchTarget = null;
-    window.addEventListener('touchstart', (e) => {
-      touching = true;
-      touchY = e.touches[0].clientY;
-      touchDy = 0;
-      touchTarget = e.target;
-      touchMode = e.touches.length > 1 ? 'native' : null;
-    }, { passive: true });
-    window.addEventListener('touchmove', (e) => {
+    // touchmove không passive chặn cuộn của trình duyệt chờ script: chỉ gắn khi đang ở hành trình, sang phần hồ sơ
+    // thì gỡ ra để trình duyệt tự cuộn mượt (không chờ luồng chính).
+    const onTouchMove = (e) => {
       if (touchMode === 'native') return;
       touchDy = touchY - e.touches[0].clientY;
       if (!touchMode && Math.abs(touchDy) > 6) {
@@ -4794,7 +4803,22 @@
         touchMode = owns(dir) && !innerScroller(touchTarget, dir) ? 'step' : 'native';
       }
       if (touchMode === 'step' && e.cancelable) e.preventDefault();
-    }, { passive: false });
+    };
+    let touchOn = false;
+    const syncTouch = () => {
+      const want = window.scrollY <= tops[last] + 2;
+      if (want === touchOn) return;
+      touchOn = want;
+      if (want) window.addEventListener('touchmove', onTouchMove, { passive: false });
+      else window.removeEventListener('touchmove', onTouchMove, { passive: false });
+    };
+    window.addEventListener('touchstart', (e) => {
+      touching = true;
+      touchY = e.touches[0].clientY;
+      touchDy = 0;
+      touchTarget = e.target;
+      touchMode = e.touches.length > 1 || !touchOn ? 'native' : null;
+    }, { passive: true });
     window.addEventListener('touchend', () => {
       touching = false;
       if (touchMode === 'step' && !animating && Math.abs(touchDy) > SWIPE_MIN_PX) go(nextIndex(Math.sign(touchDy)));
@@ -4886,14 +4910,18 @@
     });
 
     let active = -1;
+    let jtText = '';
+    let xtText = '';
     const update = () => {
+      syncTouch();
       // Chuyển cảnh đầu trang → công trình 1: chữ mờ/trượt theo đúng vị trí cuộn (CSS dùng --jt), cùng nhịp với 3D.
+      // Chỉ ghi biến khi giá trị đổi (ghi biến trên <html> bắt trình duyệt tính lại kiểu cả trang).
       const jt = Math.min(1, position());
-      root.style.setProperty('--jt', jt.toFixed(4));
+      if (jt.toFixed(4) !== jtText) { jtText = jt.toFixed(4); root.style.setProperty('--jt', jtText); }
       root.classList.toggle('intro-seg', jt < 0.999);
       // Cảnh kết → phần hồ sơ: đoạn cuộn thêm một màn hình sau cảnh kết (CSS dùng --xt, 3D đọc exit()).
       const xt = exit();
-      root.style.setProperty('--xt', xt.toFixed(4));
+      if (xt.toFixed(4) !== xtText) { xtText = xt.toFixed(4); root.style.setProperty('--xt', xtText); }
       root.classList.toggle('outro-exit', xt > 0.0005 && xt < 0.9995);
       steps[last - 1].classList.add('last-chapter');
       // Phần hồ sơ gối lên cuối cảnh kết: chỉ hiện khi trống đã che kín (trước đó nó nằm đè lên cảnh kết).
@@ -5397,7 +5425,10 @@
         map.offset.set((1 - aspect / imgAspect) / 2, 0);
       }
     };
+    let redraw = true; // khung vẽ bị xóa (đổi cỡ) hoặc đổi màu nền: phải vẽ lại dù cảnh đứng yên
+    window.addEventListener('cst-theme', () => { redraw = true; });
     const resize = () => {
+      redraw = true;
       const { clientWidth: w, clientHeight: h } = stage;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
@@ -5492,6 +5523,8 @@
 
     const clock = new THREE.Clock();
     let lastFrame = performance.now();
+    let lastDraw = 0;
+    const IDLE_DRAW_MS = 66;
     renderer.setAnimationLoop(() => {
       const now = performance.now();
       const dt = Math.min(0.1, (now - lastFrame) / 1000);
@@ -5503,6 +5536,14 @@
       const target = scrollTarget();
       progress += (target - progress) * (1 - Math.exp(-dt * SMOOTHING));
       if (Math.abs(target - progress) < 0.0005) progress = target;
+      // Cảnh đứng yên (không cuộn, không chuyển cảnh): đỡ vẽ cho máy nhẹ, cuộn mượt hơn.
+      // Đã sang nền giấy (phần hồ sơ): không vẽ nữa. Điện thoại đứng ở một công trình: chỉ trống xoay rất chậm, vẽ thưa.
+      if (progress === target && !redraw) {
+        if (paperOn && target >= 1 && stepper.exit() >= 1) return;
+        if (isNarrow && target >= 1 && now - lastDraw < IDLE_DRAW_MS) return;
+      }
+      redraw = false;
+      lastDraw = now;
       const lag = THREE.MathUtils.clamp(target - progress, -1, 1);
       // Chuyển cảnh đầu trang → công trình 1: bám thẳng vị trí cuộn (cùng giá trị với chữ, xem --jt trong setupStepper).
       // Mặt trống đồng lớn lăn từ phải sang trái: nửa đầu che dần phần mở đầu, ở giữa che kín màn hình thì đổi cảnh
