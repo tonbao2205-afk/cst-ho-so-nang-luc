@@ -188,26 +188,44 @@ jobs:
   deploy:
     name: Deploy lên máy chủ
     needs: docker
-    # Tắt cho tới khi có máy chủ: đặt biến repo DEPLOY_ENABLED=true (Settings → Secrets and variables → Actions → Variables).
+    # Bật bằng biến repo DEPLOY_ENABLED=true (Settings → Secrets and variables → Actions → Variables). Xem DEPLOY.md.
     if: github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
-    environment: production
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     steps:
-      - name: SSH vào máy chủ, kéo image mới và khởi động lại
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
-          script: |
-            set -e
-            cd ${{ vars.DEPLOY_PATH || '~/cst-site' }}
-            # Image riêng tư thì cần token đọc gói (read:packages); image công khai thì bỏ trống 2 secret này.
-            TOKEN='${{ secrets.GHCR_READ_TOKEN }}'
-            if [ -n "$TOKEN" ]; then echo "$TOKEN" | docker login ghcr.io -u '${{ secrets.GHCR_READ_USER }}' --password-stdin; fi
-            export IMAGE="${{ needs.docker.outputs.image }}:sha-${{ github.sha }}"
-            sed -i "s#^IMAGE=.*#IMAGE=${IMAGE}#" .env
-            docker compose pull app
-            docker compose up -d
-            docker image prune -f
+      - name: Nạp khóa SSH và khóa nhận diện máy chủ
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Kéo image mới và khởi động lại trên máy chủ
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          DIR: ${{ vars.DEPLOY_PATH || '~/cst-site' }}
+          IMAGE: ${{ needs.docker.outputs.image }}:sha-${{ github.sha }}
+        run: |
+          # Image công khai trên ghcr.io nên máy chủ kéo được không cần đăng nhập.
+          ssh -i ~/.ssh/deploy -p "$PORT" -o StrictHostKeyChecking=yes -o BatchMode=yes "$USER@$HOST" \
+            "set -e; cd $DIR; sed -i 's#^IMAGE=.*#IMAGE=$IMAGE#' .env; docker compose pull -q app; docker compose up -d; docker image prune -f >/dev/null; sleep 10; docker compose ps"
+
+      - name: Kiểm tra trang sau khi deploy
+        env:
+          URL: ${{ vars.SITE_URL || format('http://{0}/', secrets.DEPLOY_HOST) }}
+        run: |
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$URL") && [ "$code" = 200 ] && { echo "Trang trả về 200: $URL"; exit 0; }
+            sleep 5
+          done
+          echo "Trang không trả về 200 (mã $code): $URL"; exit 1

@@ -71,29 +71,42 @@ python tests/smoke_test.py --url http://127.0.0.1:8080
 
 `admin/data/` (mật khẩu, bản lưu trên máy) và `.env` không bao giờ được đưa lên GitHub (xem `.gitignore`).
 
-## Khi có máy chủ
+## Máy chủ đang chạy (VPS)
 
-Cần VPS Linux có Docker và tên miền đã trỏ bản ghi A về IP máy chủ.
+**VPS:** `103.159.52.49`, Ubuntu 24.04. Trang đang chạy ở http://103.159.52.49/
 
-1. Trên máy chủ, tạo thư mục `~/cst-site` và chép vào đó 3 tệp: `docker-compose.yml`, `Caddyfile`, `.env.example`.
-2. Đổi tên `.env.example` thành `.env` rồi điền `DOMAIN`, `IMAGE`, `CST_ADMIN_USER` và `CST_ADMIN_PASSWORD`. Dùng **mật khẩu mạnh**, vì admin mở ra Internet; mật khẩu "1" đang dùng trên máy là không được.
-3. Nếu image riêng tư, đăng nhập trước: `docker login ghcr.io` (dùng token có quyền `read:packages`).
-4. Chạy `docker compose up -d`. Trang ở `https://<tên miền>`, admin ở `https://<tên miền>/admin/`.
+- **Docker và tường lửa:** đã cài Docker. Tường lửa `ufw` chỉ mở các cổng 22, 80 và 443.
+- **Tài khoản `deploy`:** chỉ đăng nhập bằng khóa SSH, thuộc nhóm docker. GitHub Actions dùng tài khoản này, không dùng mật khẩu root.
+- **Thư mục cấu hình** `/home/deploy/cst-site/` gồm `docker-compose.yml`, `Caddyfile`, `Caddyfile.ip` và `.env`. Tệp `.env` chứa mật khẩu admin và không có trên GitHub.
+- **Chưa có tên miền:** `.env` đang đặt `CADDYFILE=Caddyfile.ip`, nên trang chỉ chạy HTTP và **trang admin bị chặn (403)**.
 
-Muốn đưa nội dung đã sửa trên máy hiện tại lên máy chủ: sau lần chạy đầu, vào admin → Bản lưu, hoặc chép `index.html` vào ổ dữ liệu.
+### Deploy tự động
 
-### Bật deploy tự động từ GitHub
+Mỗi lần push lên `main`, nếu kiểm thử và build image đều đạt, job `deploy` sẽ:
 
-Vào repo → Settings → Secrets and variables → Actions.
+1. SSH vào VPS bằng tài khoản `deploy`.
+2. Ghi `IMAGE=…:sha-<commit>` vào `.env`.
+3. Chạy `docker compose pull` rồi `docker compose up -d`.
+4. Kiểm tra `SITE_URL` có trả về 200.
 
-- **Variables**:
-  - `DEPLOY_ENABLED` = `true`
-  - (tùy chọn) `DEPLOY_PATH` = `~/cst-site`
-- **Secrets**:
-  - `DEPLOY_HOST`: IP hoặc tên máy chủ
-  - `DEPLOY_USER`: người dùng SSH
-  - `DEPLOY_SSH_KEY`: khóa SSH riêng
-  - (tùy chọn) `DEPLOY_PORT`
-  - `GHCR_READ_USER` và `GHCR_READ_TOKEN`: chỉ cần khi image riêng tư
+Cấu hình trên GitHub (Settings → Secrets and variables → Actions):
 
-Từ đó mỗi lần push lên `main`, sau khi kiểm thử đạt, GitHub SSH vào máy chủ, kéo image mới và khởi động lại.
+- **Secrets:** `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`.
+- **Variables:** `DEPLOY_ENABLED=true`, `DEPLOY_PATH=~/cst-site`, `SITE_URL`.
+
+Muốn tạm dừng deploy tự động thì đặt `DEPLOY_ENABLED=false`.
+
+### Khi có tên miền
+
+1. Trỏ bản ghi A của tên miền (và `www` nếu dùng) về `103.159.52.49`.
+2. Trên VPS, sửa `/home/deploy/cst-site/.env`:
+   - `DOMAIN=<tên miền>`
+   - `CADDYFILE=Caddyfile`
+3. Chạy `docker compose up -d` trong thư mục đó. Caddy tự lấy chứng chỉ HTTPS và trang admin mở ở `https://<tên miền>/admin/`.
+4. Trên GitHub, đổi biến `SITE_URL` thành `https://<tên miền>/`.
+
+### Lưu ý về nội dung
+
+- Khi admin trên VPS đã mở, nội dung sửa qua admin nằm trên VPS (ổ dữ liệu `cst-site_cst-data`).
+- Bản sửa bằng admin trên máy tính chỉ lên VPS qua commit và push. Nếu trang trên VPS đã bị sửa qua admin, bản mới được cất vào **Bản lưu** để chọn Khôi phục (xem mục "Dữ liệu nằm ở đâu").
+- Nên chọn một nơi sửa chính để tránh hai bản khác nhau.

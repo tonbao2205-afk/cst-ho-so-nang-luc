@@ -28,7 +28,8 @@ services:
     environment:
       DOMAIN: ${DOMAIN:-localhost}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Chưa có tên miền: CADDYFILE=Caddyfile.ip (chỉ HTTP, chặn admin). Có tên miền: CADDYFILE=Caddyfile (HTTPS).
+      - ./${CADDYFILE:-Caddyfile}:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
 
